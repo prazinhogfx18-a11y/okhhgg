@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste API GladePay</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+    .box { background: #f5f5f5; border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 8px; }
+    button { background: #0070f3; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+    button:hover { background: #0051cc; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 13px; }
+    .success { color: #059669; font-weight: bold; }
+    .error { color: #dc2626; font-weight: bold; }
+    .loading { color: #3b82f6; font-style: italic; }
+    img { max-width: 300px; margin: 10px 0; border: 2px solid #ddd; }
+  </style>
+</head>
+<body>
+  <h1>🧪 Teste de Integração GladePay</h1>
+  
+  <div class="box">
+    <h2>1. Testar criação de PIX</h2>
+    <button onclick="testCreatePix()">Gerar PIX de teste (R$ 29,90)</button>
+    <div id="result-create" style="margin-top: 15px;"></div>
+  </div>
+
+  <div class="box">
+    <h2>2. Testar consulta de status</h2>
+    <input type="text" id="txId" placeholder="Cole o publicId/txId aqui" style="width: 300px; padding: 8px;">
+    <button onclick="testCheckStatus()">Consultar Status</button>
+    <div id="result-status" style="margin-top: 15px;"></div>
+  </div>
+
+  <div class="box">
+    <h2>3. Logs do console</h2>
+    <button onclick="document.getElementById('console-logs').innerHTML = ''">Limpar logs</button>
+    <pre id="console-logs"></pre>
+  </div>
+
+  <script>
+    const log = (msg) => {
+      const logs = document.getElementById('console-logs');
+      const timestamp = new Date().toLocaleTimeString();
+      logs.innerHTML += `[${timestamp}] ${msg}\n`;
+      console.log(msg);
+    };
+
+    async function testCreatePix() {
+      const resultDiv = document.getElementById('result-create');
+      resultDiv.innerHTML = '<p class="loading">⏳ Gerando PIX...</p>';
+      log('Iniciando criação de PIX...');
+
+      try {
+        log('Fazendo fetch para /api/gp-deposito');
+        const response = await fetch('/api/gp-deposito', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amountCents: 2990,
+            reference: 'teste-' + Date.now(),
+            callbackUrl: 'https://consulta-valoresareceber-hoje.vercel.app/api/hp-webhook',
+            customerName: 'Teste',
+            description: 'Teste API'
+          })
+        });
+
+        log(`Resposta HTTP: ${response.status} ${response.statusText}`);
+        
+        const data = await response.json();
+        log(`Dados recebidos: ${JSON.stringify(data, null, 2)}`);
+
+        if (!response.ok) {
+          resultDiv.innerHTML = `
+            <p class="error">❌ Erro ${response.status}</p>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+          return;
+        }
+
+        if (!data.qrCodeText) {
+          resultDiv.innerHTML = `
+            <p class="error">⚠️ PIX criado mas sem código QR</p>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+          return;
+        }
+
+        resultDiv.innerHTML = `
+          <p class="success">✅ PIX gerado com sucesso!</p>
+          <p><strong>ID:</strong> ${data.publicId || data.txId}</p>
+          <p><strong>Status:</strong> ${data.status}</p>
+          ${data.qrCodeUrl ? `<img src="${data.qrCodeUrl}" alt="QR Code">` : ''}
+          <p><strong>Código Copia e Cola:</strong></p>
+          <textarea readonly style="width: 100%; height: 80px; font-size: 11px;">${data.qrCodeText}</textarea>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+
+        // Preenche o campo de txId automaticamente
+        document.getElementById('txId').value = data.publicId || data.txId;
+        
+      } catch (err) {
+        log(`Erro de rede/fetch: ${err.message}`);
+        resultDiv.innerHTML = `
+          <p class="error">❌ Erro de rede</p>
+          <pre>${err.message}\n${err.stack}</pre>
+        `;
+      }
+    }
+
+    async function testCheckStatus() {
+      const txId = document.getElementById('txId').value.trim();
+      const resultDiv = document.getElementById('result-status');
+
+      if (!txId) {
+        resultDiv.innerHTML = '<p class="error">❌ Informe um txId</p>';
+        return;
+      }
+
+      resultDiv.innerHTML = '<p class="loading">⏳ Consultando status...</p>';
+      log(`Consultando status do txId: ${txId}`);
+
+      try {
+        const response = await fetch(`/api/gp-status?txId=${encodeURIComponent(txId)}`);
+        log(`Resposta HTTP: ${response.status} ${response.statusText}`);
+        
+        const data = await response.json();
+        log(`Dados recebidos: ${JSON.stringify(data, null, 2)}`);
+
+        if (!response.ok) {
+          resultDiv.innerHTML = `
+            <p class="error">❌ Erro ${response.status}</p>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+          return;
+        }
+
+        resultDiv.innerHTML = `
+          <p class="success">✅ Status consultado</p>
+          <p><strong>Status:</strong> ${data.status}</p>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+        
+      } catch (err) {
+        log(`Erro de rede/fetch: ${err.message}`);
+        resultDiv.innerHTML = `
+          <p class="error">❌ Erro de rede</p>
+          <pre>${err.message}</pre>
+        `;
+      }
+    }
+
+    log('Página carregada e pronta para testes');
+  </script>
+</body>
+</html>
