@@ -787,11 +787,26 @@
 
       try {
         const order   = await createOrder();
+        console.log('Order response:', order);
+        
+        if (!order || order.error) {
+          throw new Error(order?.error || 'Resposta inválida da API');
+        }
+
         externalId    = order.publicId || order.txId;
+        
+        if (!externalId) {
+          throw new Error('API não retornou ID da transação');
+        }
 
         const pixCode = order.qrCodeText || order.copy_past || '';
         const qrSrc   = order.qrCodeUrl
           || (order.qrCodeBase64 ? `data:image/png;base64,${order.qrCodeBase64}` : '');
+        
+        if (!pixCode) {
+          throw new Error('API não retornou código PIX');
+        }
+        
         document.getElementById('qr-image').src = qrSrc;
         document.getElementById('pix-code').textContent = pixCode;
 
@@ -805,9 +820,11 @@
 
       } catch(err) {
         console.error('Erro ao gerar PIX:', err);
+        const errorDetail = err.message || 'Erro desconhecido';
         document.getElementById('loading-state').innerHTML =
           `<p style="color:#dc2626;font-size:14px;text-align:center;">
             <i class="fas fa-exclamation-circle"></i><br>Erro ao gerar o código PIX.<br>
+            <small style="color:#666;margin-top:8px;display:block;">${errorDetail}</small>
             <button onclick="window.location.reload()" style="margin-top:12px;padding:10px 20px;background:#0042DA;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;">
               Tentar novamente
             </button>
