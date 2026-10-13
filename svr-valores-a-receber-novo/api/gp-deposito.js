@@ -34,6 +34,8 @@ module.exports = async (req, res) => {
     if (body.customerEmail) payload.customerEmail = String(body.customerEmail);
     if (body.description)  payload.description  = String(body.description);
 
+    console.log('GladePay request:', { payload, apiKey: GP_API_KEY ? 'presente' : 'ausente' });
+
     const gpRes = await fetch(`${GP_API_BASE}/deposito`, {
       method: 'POST',
       headers: {
@@ -44,20 +46,35 @@ module.exports = async (req, res) => {
     });
 
     const data = await gpRes.json().catch(() => ({}));
+    
+    console.log('GladePay response:', { status: gpRes.status, ok: gpRes.ok, data });
 
     if (!gpRes.ok) {
       console.error('GladePay deposito erro:', gpRes.status, data);
-      return res.status(gpRes.status).json({ error: 'Falha ao gerar PIX', detail: data });
+      return res.status(gpRes.status || 500).json({ 
+        error: 'Falha ao gerar PIX', 
+        detail: data,
+        statusCode: gpRes.status 
+      });
+    }
+
+    // Valida resposta mínima
+    if (!data.qrCodeText && !data.copy_past) {
+      console.error('GladePay resposta sem QR code:', data);
+      return res.status(500).json({ 
+        error: 'Resposta da GladePay incompleta (sem código PIX)',
+        detail: data 
+      });
     }
 
     // Devolve ao browser SOMENTE o necessário — nunca a chave.
     return res.status(200).json({
       ok:           true,
       publicId:     data.publicId || data.txId || null,
-      txId:         data.txId || null,
+      txId:         data.txId || data.publicId || null,
       status:       data.status || 'CREATED',
       amountCents:  data.amountCents,
-      qrCodeText:   data.qrCodeText || null,
+      qrCodeText:   data.qrCodeText || data.copy_past || null,
       qrCodeUrl:    data.qrCodeUrl || null,
       qrCodeBase64: data.qrCodeBase64 || null,
       expiresAt:    data.expiresAt || null

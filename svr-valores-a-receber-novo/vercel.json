@@ -3,8 +3,7 @@
   "name": "consulta-valoresareceber-hoje",
   "buildCommand": null,
   "outputDirectory": ".",
-  "routes": [
-    { "src": "/", "dest": "/etapa1/index.html" },
-    { "src": "/(.*)", "dest": "/$1" }
+  "rewrites": [
+    { "source": "/", "destination": "/etapa1/index.html" }
   ]
 }
