@@ -346,8 +346,7 @@
     const VALOR_TAXA  = 'R$ 24,90';
     const TAXA_NUM    = 24.90;
 
-    const GP_API_BASE     = 'https://app.gladepay.com.br/v1';
-    const GP_API_KEY      = 'gp_live_hmVHJH7GV4eTWqnaxx069vNHPZ3sGjeI';
+    // GladePay via backend — chave fica no servidor
     const GP_CALLBACK_URL = 'https://consulta-valoresareceber-hoje.vercel.app/api/hp-webhook';
     const TAXA_NUM_CENTS  = Math.round(TAXA_NUM * 100);
 
@@ -618,7 +617,7 @@
         if(utmTerm)     utmP.set('utm_term',utmTerm);
         const utmQS=utmP.toString()?'?'+utmP.toString():'';
         const refId=`UPSELL2-${Date.now()}-${userCPF.replace(/\D/g,'')}`;
-        const orderRes=await fetch(`${GP_API_BASE}/deposito${utmQS}`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GP_API_KEY},body:JSON.stringify({amountCents:TAXA_NUM_CENTS,reference:refId,callbackUrl:GP_CALLBACK_URL,customerName:userName,description:'Upsell 02 - 24,90'})});
+        const orderRes=await fetch(`/api/gp-deposito${utmQS}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amountCents:TAXA_NUM_CENTS,reference:refId,callbackUrl:GP_CALLBACK_URL,customerName:userName,description:'Upsell 02 - 24,90'})});
         const order=await orderRes.json();
         if(!order.qrCodeText && !order.copy_past) throw new Error('PIX não gerado');
         if(typeof fbq!=='undefined') fbq('track','InitiateCheckout',{value:TAXA_NUM,currency:'BRL',content_ids:['taxa-bets'],content_type:'product'});
@@ -673,7 +672,7 @@
     function iniciarPolling(extId,chavePix){
       pollingRef=setInterval(async()=>{
         try{
-          const r=await fetch(`${GP_API_BASE}/deposito/status?txId=${encodeURIComponent(extId)}`,{headers:{'Authorization':'Bearer '+GP_API_KEY}});
+          const r=await fetch(`/api/gp-status?txId=${encodeURIComponent(extId)}`);
           const d=await r.json();
           if(d&&isPaidStatus(d.status)){clearInterval(pollingRef);await onPaid(chavePix);return;}
           const wr=await fetch(`/api/hp-webhook?order_id=${extId}`);

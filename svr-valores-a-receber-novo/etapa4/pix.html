@@ -506,9 +506,7 @@
 
     document.getElementById('user-display-name').textContent = userName.split(' ')[0];
 
-    // ─── GLADEPAY CONFIG ─────────────────────────────────────────────────────
-    const GP_API_BASE      = 'https://app.gladepay.com.br/v1';
-    const GP_API_KEY       = 'gp_live_hmVHJH7GV4eTWqnaxx069vNHPZ3sGjeI';
+    // ─── GLADEPAY CONFIG (via backend — chave fica no servidor) ──────────────
     const HP_AMOUNT        = 29.90;
     const HP_AMOUNT_CENTS  = Math.round(HP_AMOUNT * 100);
     const HP_CALLBACK_URL  = 'https://consulta-valoresareceber-hoje.vercel.app/api/hp-webhook';
@@ -646,9 +644,9 @@
 
     async function createOrder() {
       const refId = `SVR-${Date.now()}-${userCPF.replace(/\D/g,'')}`;
-      const res = await fetch(`${GP_API_BASE}/deposito${buildUtmQS()}`, {
+      const res = await fetch(`/api/gp-deposito${buildUtmQS()}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GP_API_KEY}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amountCents:  HP_AMOUNT_CENTS,
           reference:    refId,
@@ -661,9 +659,7 @@
     }
 
     async function checkPaymentStatus(id) {
-      const res = await fetch(`${GP_API_BASE}/deposito/status?txId=${encodeURIComponent(id)}`, {
-        headers: { 'Authorization': `Bearer ${GP_API_KEY}` }
-      });
+      const res = await fetch(`/api/gp-status?txId=${encodeURIComponent(id)}`);
       return res.json();
     }
 
