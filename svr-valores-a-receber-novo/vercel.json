@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "consulta-valoresareceber-hoje",
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "routes": [
+    { "src": "/", "dest": "/etapa1/index.html" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}

