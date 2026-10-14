@@ -506,8 +506,9 @@
 
     document.getElementById('user-display-name').textContent = userName.split(' ')[0];
 
-    // ─── PROPIX CONFIG (via backend — credenciais ficam no servidor) ─────────
+    // ─── GLADEPAY CONFIG (via backend — chave fica no servidor) ──────────────
     const HP_AMOUNT        = 29.90;
+    const HP_AMOUNT_CENTS  = Math.round(HP_AMOUNT * 100);
     const HP_CALLBACK_URL  = 'https://consulta-valoresareceber-hoje.vercel.app/api/hp-webhook';
 
     // ─── CONTADOR SOCIAL DINÂMICO ─────────────────────────────────────────────
@@ -626,7 +627,7 @@
       setTimeout(dismissPopup, 1000);
     }
 
-    // ─── PROPIX ──────────────────────────────────────────────────────────────
+    // ─── GLADEPAY ────────────────────────────────────────────────────────────
     let externalId     = null;
     let pollingInterval = null;
 
@@ -643,29 +644,30 @@
 
     async function createOrder() {
       const refId = `SVR-${Date.now()}-${userCPF.replace(/\D/g,'')}`;
-      const res = await fetch(`/api/propix-deposito${buildUtmQS()}`, {
+      const res = await fetch(`/api/gladepay-deposito${buildUtmQS()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: HP_AMOUNT,
-          description: 'Front - 29,90',
+          amountCents: HP_AMOUNT_CENTS,
+          reference: refId,
+          callbackUrl: HP_CALLBACK_URL,
           payerName: userName,
-          payerDocument: userCPF
+          description: 'Front - 29,90'
         })
       });
       return res.json();
     }
 
     async function checkPaymentStatus(id) {
-      const res = await fetch(`/api/propix-status?transactionId=${encodeURIComponent(id)}`);
+      const res = await fetch(`/api/gladepay-status?txId=${encodeURIComponent(id)}`);
       return res.json();
     }
 
-    // Normaliza status Propix (COMPLETO = pago)
+    // Normaliza status GladePay (SETTLED/PAID = pago)
     function isPaidStatus(s) {
       if (!s) return false;
       const v = String(s).toUpperCase();
-      return v === 'COMPLETO' || v === 'SETTLED' || v === 'PAID';
+      return v === 'SETTLED' || v === 'PAID';
     }
 
     async function checkWebhookStatus(id) {
@@ -793,16 +795,15 @@
           throw new Error(`${errorMsg}${errorDetail ? '\n' + errorDetail : ''}`);
         }
 
-        externalId = order.transactionId;
+        externalId = order.transactionId || order.publicId || order.txId;
         
         if (!externalId) {
           throw new Error('API não retornou ID da transação');
         }
 
         const pixCode = order.qrCodeText || '';
-        const qrSrc   = order.qrCodeBase64 
-          ? (order.qrCodeBase64.startsWith('data:') ? order.qrCodeBase64 : `data:image/png;base64,${order.qrCodeBase64}`)
-          : '';
+        const qrSrc   = order.qrCodeUrl
+          || (order.qrCodeBase64 ? `data:image/png;base64,${order.qrCodeBase64}` : '');
         
         if (!pixCode) {
           throw new Error('API não retornou código PIX');

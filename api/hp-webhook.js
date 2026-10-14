@@ -1,10 +1,9 @@
-// Vercel Serverless Function — Webhook para receber notificações
+// Vercel Serverless Function — Webhook universal
 // POST /api/hp-webhook
-// Compatível com GladePay e Propix
+// Compatível com GladePay, Propix e outros
 // Salva o status em memória e responde ao client via polling (GET)
 
-// Armazena pagamentos confirmados em memória (persiste durante a vida do serverless)
-// Para produção robusta, usar Vercel KV ou Redis
+// Armazena pagamentos confirmados em memória
 const paidOrders = new Map();
 
 // Normaliza o status para booleano "pago"
