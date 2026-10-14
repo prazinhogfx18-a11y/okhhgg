@@ -5,7 +5,7 @@
 // GladePay: sem whitelist de IP, funciona direto com serverless
 
 const GLADEPAY_API_BASE = 'https://app.gladepay.com.br/v1';
-const GLADEPAY_API_KEY = process.env.GLADEPAY_API_KEY || 'SUA_KEY_AQUI'; // Você vai me passar
+const GLADEPAY_API_KEY = process.env.GLADEPAY_API_KEY || 'gp_live_26gVhlW1EmbS9aWiBVZR7QV_iDQpoCfL';
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
