@@ -16,9 +16,9 @@
 <body>
   <h1>🧪 Teste GladePay - Diagnóstico Completo</h1>
   
-  <button onclick="testAPI()">1. Testar API Backend (/api/gladepay-deposito)</button>
-  <button onclick="testDirectGladePay()">2. Testar GladePay Direto (do navegador)</button>
-  <button onclick="testBalance()">3. Testar Saldo GladePay</button>
+  <button onclick="testDiagnostic()">🔍 1. DIAGNÓSTICO COMPLETO (executar primeiro)</button>
+  <button onclick="testAPI()">2. Testar API Backend (/api/gladepay-deposito)</button>
+  <button onclick="testDirectGladePay()">3. Testar GladePay Direto (do navegador)</button>
   
   <div id="result"></div>
 
@@ -30,6 +30,58 @@
       p.className = isError ? 'error' : 'success';
       p.textContent = msg;
       resultDiv.appendChild(p);
+    }
+
+    async function testDiagnostic() {
+      resultDiv.innerHTML = '<h2>🔍 Diagnóstico Completo da Integração GladePay</h2>';
+      try {
+        log('Executando testes automáticos no backend...');
+        
+        const res = await fetch('/api/gladepay-test');
+        const data = await res.json();
+
+        log('⏰ Timestamp: ' + data.timestamp);
+        log('\n📝 Configuração da Chave:');
+        log(JSON.stringify(data.keyConfig, null, 2));
+
+        data.tests.forEach((test, i) => {
+          log(`\n\n🧪 Teste ${i + 1}: ${test.name}`);
+          if (test.error) {
+            log('❌ Erro: ' + test.error, true);
+          } else {
+            log(`Status: ${test.status} ${test.statusText || ''}`);
+            log('Sucesso: ' + (test.ok ? '✅ SIM' : '❌ NÃO'), !test.ok);
+            if (test.response) {
+              log('Resposta:\n' + JSON.stringify(test.response, null, 2), !test.ok);
+            }
+            if (test.rawText) {
+              log('Texto bruto:\n' + test.rawText);
+            }
+          }
+        });
+
+        // Análise final
+        log('\n\n📊 ANÁLISE:');
+        const depositoTest = data.tests.find(t => t.name.includes('deposito'));
+        if (depositoTest && depositoTest.status === 403) {
+          log('⚠️ PROBLEMA IDENTIFICADO: 403 Forbidden', true);
+          log('\nPossíveis causas:', true);
+          log('1. Chave API sem permissão FULL (verifique o dashboard)', true);
+          log('2. Conta GladePay não ativada ou bloqueada', true);
+          log('3. Chave revogada ou inválida', true);
+          log('4. API key não está configurada no Vercel (usando fallback)', true);
+          log('\n🔧 Próximos passos:', false);
+          log('- Acesse dashboard.gladepay.com.br', false);
+          log('- Verifique se a chave gp_live_1FvWAr7Hz8kv... está ATIVA', false);
+          log('- Confirme que o escopo é FULL (não READ_ONLY)', false);
+          log('- Verifique status da conta (deve estar aprovada/ativa)', false);
+        } else if (depositoTest && depositoTest.ok) {
+          log('✅ FUNCIONANDO! A API respondeu com sucesso!', false);
+        }
+
+      } catch (err) {
+        log('Erro ao executar diagnóstico:\n' + err.message, true);
+      }
     }
 
     async function testAPI() {
