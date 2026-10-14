@@ -348,6 +348,8 @@
     footer { background: #001C4E; padding: 12px; text-align: center; }
     footer img { height: 22px; opacity: 0.9; }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="/gladepay-qr.js"></script>
 </head>
 <body>
 
@@ -586,16 +588,17 @@
       cpfInput.classList.add('filled');
     }
 
-    // ─── CONFIG (Propix via backend — credenciais ficam no servidor) ─────────
+    // ─── CONFIG (GladePay via backend — credenciais ficam no servidor) ────────
     const HP_AMOUNT        = 19.90;
+    const HP_AMOUNT_CENTS  = 1990;
 
     let externalId      = null;
     let pollingInterval = null;
+    let pollingInFlight = false;
+    let paymentHandled  = false;
 
-    function isPaidStatus(s) {
-      if (!s) return false;
-      const v = String(s).toUpperCase();
-      return v === 'COMPLETO' || v === 'SETTLED' || v === 'PAID';
+    function isPaidStatus(status) {
+      return status === 'PAID' || status === 'SETTLED';
     }
     let timerSeconds    = 15 * 60;
     let timerInterval   = null;
@@ -694,34 +697,55 @@
       return q ? '?' + q : '';
     }
 
+    function getStableReference() {
+      const cpf = userCPF.replace(/\D/g, '') || 'anonimo';
+      const storageKey = `gladepay_ref_upsell1_${cpf}`;
+      const now = Date.now();
+
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+        if (saved && saved.reference && now - saved.createdAt < 15 * 60 * 1000) {
+          return saved.reference;
+        }
+      } catch(e) {}
+
+      const nonce = window.crypto?.randomUUID?.() || `${now}-${Math.random().toString(16).slice(2)}`;
+      const reference = `UPSELL1-${cpf}-${nonce}`;
+      localStorage.setItem(storageKey, JSON.stringify({ reference, createdAt: now }));
+      return reference;
+    }
+
+    async function readApiResponse(response) {
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.error?.message || `Erro HTTP ${response.status}`);
+      }
+      return data;
+    }
+
     async function createOrder() {
-      const refId = `UPSELL1-${Date.now()}-${userCPF.replace(/\D/g,'')}`;
-      const r = await fetch(`/api/propix-deposito${buildUtmQS()}`, {
+      const response = await fetch(`/api/gladepay-deposito${buildUtmQS()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: HP_AMOUNT,
+          amountCents: HP_AMOUNT_CENTS,
+          reference: getStableReference(),
           description: 'Upsell 01 - 19,90',
-          payerName: userName,
-          payerDocument: userCPF
+          customerName: userName,
+          expiresInSeconds: 900
         })
       });
-      return r.json();
+      return readApiResponse(response);
     }
 
     async function checkPaymentStatus(id) {
-      const r = await fetch(`/api/propix-status?transactionId=${encodeURIComponent(id)}`);
-      return r.json();
-    }
-
-    async function checkWebhookStatus(id) {
-      try {
-        const r = await fetch(`/api/hp-webhook?order_id=${id}`);
-        return (await r.json()).paid === true;
-      } catch(e) { return false; }
+      const response = await fetch(`/api/gladepay-status?txId=${encodeURIComponent(id)}`);
+      return readApiResponse(response);
     }
 
     function onUpsellPaid() {
+      if (paymentHandled) return;
+      paymentHandled = true;
       clearInterval(pollingInterval);
       clearInterval(timerInterval);
       const eventId = `purchase-ted-${externalId}-${Date.now()}`;
@@ -756,24 +780,30 @@
 
     function startPolling() {
       pollingInterval = setInterval(async () => {
+        if (pollingInFlight || paymentHandled) return;
+        pollingInFlight = true;
         try {
-          const d = await checkPaymentStatus(externalId);
-          if (d && isPaidStatus(d.status)) { onUpsellPaid(); return; }
-          if (await checkWebhookStatus(externalId)) { onUpsellPaid(); return; }
+          const data = await checkPaymentStatus(externalId);
+          if (isPaidStatus(data.status)) onUpsellPaid();
         } catch(e) {
-          if (await checkWebhookStatus(externalId)) { onUpsellPaid(); return; }
+          console.error('Erro ao consultar status GladePay:', e);
+        } finally {
+          pollingInFlight = false;
         }
       }, 3000);
     }
 
     // ─── VISIBILITYCHANGE ─────────────────────────────────────────────────────
     document.addEventListener('visibilitychange', async () => {
-      if (document.visibilityState === 'visible' && externalId) {
-        if (await checkWebhookStatus(externalId)) { onUpsellPaid(); return; }
-        try {
-          const d = await checkPaymentStatus(externalId);
-          if (d && isPaidStatus(d.status)) { onUpsellPaid(); return; }
-        } catch(e) {}
+      if (document.visibilityState !== 'visible' || !externalId || pollingInFlight || paymentHandled) return;
+      pollingInFlight = true;
+      try {
+        const data = await checkPaymentStatus(externalId);
+        if (isPaidStatus(data.status)) onUpsellPaid();
+      } catch(e) {
+        console.error('Erro ao consultar status GladePay:', e);
+      } finally {
+        pollingInFlight = false;
       }
     });
 
@@ -814,14 +844,18 @@
       btn.disabled = true;
 
       try {
-        const order   = await createOrder();
-        externalId    = order.transactionId;
+        const order = await createOrder();
+        if (!order || order.ok !== true) throw new Error('Resposta inválida da GladePay');
 
-        const qrSrc = order.qrCodeBase64 
+        externalId = order.publicId || order.txId;
+        if (!externalId || !order.qrCodeText) throw new Error('Cobrança GladePay incompleta');
+
+        const qrSrc = order.qrCodeUrl || (order.qrCodeBase64
           ? (order.qrCodeBase64.startsWith('data:') ? order.qrCodeBase64 : `data:image/png;base64,${order.qrCodeBase64}`)
-          : '';
-        document.getElementById('qr-upsell').src = qrSrc;
-        document.getElementById('pix-code-upsell').textContent = order.qrCodeText || '';
+          : '');
+        const qrImage = document.getElementById('qr-upsell');
+        window.renderGladePayQr(qrImage, qrSrc, order.qrCodeText);
+        document.getElementById('pix-code-upsell').textContent = order.qrCodeText;
         document.getElementById('pix-section').style.display = 'block';
         document.getElementById('btn-copy-fixed').classList.add('visible');
 

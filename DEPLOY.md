@@ -23,7 +23,7 @@ mesmo projeto/domínio. Pull requests recebem URLs de preview automáticas.
 |--------------------|------------------------------|-----------------------|
 | `GLADEPAY_API_KEY` | sua chave `gp_live_...`       | Production, Preview   |
 
-O backend (`api/gp-deposito.js`, `api/gp-status.js`) lê `process.env.GLADEPAY_API_KEY`.
+O backend (`api/gladepay-deposito.js`, `api/gladepay-status.js`) lê `process.env.GLADEPAY_API_KEY`.
 Com a variável configurada, a chave fica fora do código e vem só da Vercel.
 
 > Após adicionar/alterar variáveis, faça um redeploy (ou um novo push) para elas valerem.
