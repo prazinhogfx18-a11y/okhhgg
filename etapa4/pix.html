@@ -788,7 +788,9 @@
         console.log('Order response:', order);
         
         if (!order || order.error || !order.success) {
-          throw new Error(order?.error || order?.detail?.message || 'Resposta inválida da API');
+          const errorMsg = order?.message || order?.detail?.message || order?.error || 'Resposta inválida da API';
+          const errorDetail = order?.detail ? JSON.stringify(order.detail, null, 2) : '';
+          throw new Error(`${errorMsg}${errorDetail ? '\n' + errorDetail : ''}`);
         }
 
         externalId = order.transactionId;

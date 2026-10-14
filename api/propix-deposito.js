@@ -34,10 +34,14 @@ module.exports = async (req, res) => {
       amount: amount,
       description: body.description || 'Pagamento',
       payerName: String(body.payerName),
-      payerDocument: String(body.payerDocument).replace(/\D/g, '')
+      payerDocument: String(body.payerDocument).replace(/\D/g, '') // Remove formatação do CPF
     };
 
-    console.log('Propix request:', { payload, clientId: PROPIX_CLIENT_ID ? 'presente' : 'ausente' });
+    console.log('Propix request:', { 
+      payload, 
+      clientId: PROPIX_CLIENT_ID ? PROPIX_CLIENT_ID.substring(0, 15) + '...' : 'ausente',
+      secretPresent: PROPIX_CLIENT_SECRET ? 'presente' : 'ausente'
+    });
 
     const propixRes = await fetch(`${PROPIX_API_BASE}/api/v1/deposit`, {
       method: 'POST',
@@ -51,14 +55,22 @@ module.exports = async (req, res) => {
 
     const data = await propixRes.json().catch(() => ({}));
     
-    console.log('Propix response:', { status: propixRes.status, ok: propixRes.ok, data });
+    console.log('Propix response:', { 
+      status: propixRes.status, 
+      ok: propixRes.ok, 
+      statusText: propixRes.statusText,
+      headers: Object.fromEntries(propixRes.headers.entries()),
+      data 
+    });
 
     if (!propixRes.ok) {
       console.error('Propix deposito erro:', propixRes.status, data);
+      // Retorna erro detalhado para debug
       return res.status(propixRes.status || 500).json({ 
         error: 'Falha ao gerar PIX', 
         detail: data,
-        statusCode: propixRes.status 
+        statusCode: propixRes.status,
+        message: data.message || data.error || 'Erro desconhecido da Propix'
       });
     }
 
