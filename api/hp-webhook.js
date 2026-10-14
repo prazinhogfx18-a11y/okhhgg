@@ -1,18 +1,18 @@
-// Vercel Serverless Function — GladePay Webhook
+// Vercel Serverless Function — Webhook para receber notificações
 // POST /api/hp-webhook
-// Recebe callback da GladePay quando o pagamento é confirmado
+// Compatível com GladePay e Propix
 // Salva o status em memória e responde ao client via polling (GET)
 
 // Armazena pagamentos confirmados em memória (persiste durante a vida do serverless)
 // Para produção robusta, usar Vercel KV ou Redis
 const paidOrders = new Map();
 
-// Normaliza o status da GladePay para booleano "pago"
+// Normaliza o status para booleano "pago"
 function isPaidStatus(status) {
   if (status === true) return true;
   if (typeof status !== 'string') return false;
   const s = status.toUpperCase();
-  return s === 'SETTLED' || s === 'PAID';
+  return s === 'SETTLED' || s === 'PAID' || s === 'COMPLETO' || s === 'DEPOSITO_COMPLETO';
 }
 
 module.exports = async (req, res) => {
@@ -30,25 +30,26 @@ module.exports = async (req, res) => {
     return res.status(200).json({ paid, order_id });
   }
 
-  // ── POST: recebe webhook da GladePay ─────────────────────────────────────
+  // ── POST: recebe webhook (GladePay ou Propix) ────────────────────────────
   if (req.method === 'POST') {
     try {
       // Payload GladePay: { event, id (publicId), reference, type, status, amount, refundedAmount }
+      // Payload Propix: { transactionId, status, amount, type }
       const body = req.body || {};
-      const publicId  = body.id || body.publicId || body.txId;
-      const status    = body.status;
-      const reference = body.reference;
+      const txId = body.id || body.publicId || body.txId || body.transactionId;
+      const status = body.status || body.transactionState;
+      const reference = body.reference || body.description;
 
-      console.log('GladePay webhook:', { publicId, status, reference, event: body.event });
+      console.log('Webhook recebido:', { txId, status, reference, event: body.event });
 
       // Pagamento confirmado
       if (isPaidStatus(status)) {
-        if (publicId) {
-          paidOrders.set(String(publicId), {
+        if (txId) {
+          paidOrders.set(String(txId), {
             paid_at: new Date().toISOString(),
             reference
           });
-          console.log(`Pedido ${publicId} marcado como PAGO`);
+          console.log(`Pedido ${txId} marcado como PAGO`);
         }
       }
 

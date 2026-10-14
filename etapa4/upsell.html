@@ -586,10 +586,8 @@
       cpfInput.classList.add('filled');
     }
 
-    // ─── CONFIG (GladePay via backend — chave fica no servidor) ──────────────
-    const GP_CALLBACK_URL  = 'https://consulta-valoresareceber-hoje.vercel.app/api/hp-webhook';
+    // ─── CONFIG (Propix via backend — credenciais ficam no servidor) ─────────
     const HP_AMOUNT        = 19.90;
-    const HP_AMOUNT_CENTS  = Math.round(HP_AMOUNT * 100);
 
     let externalId      = null;
     let pollingInterval = null;
@@ -597,7 +595,7 @@
     function isPaidStatus(s) {
       if (!s) return false;
       const v = String(s).toUpperCase();
-      return v === 'SETTLED' || v === 'PAID';
+      return v === 'COMPLETO' || v === 'SETTLED' || v === 'PAID';
     }
     let timerSeconds    = 15 * 60;
     let timerInterval   = null;
@@ -698,22 +696,21 @@
 
     async function createOrder() {
       const refId = `UPSELL1-${Date.now()}-${userCPF.replace(/\D/g,'')}`;
-      const r = await fetch(`/api/gp-deposito${buildUtmQS()}`, {
+      const r = await fetch(`/api/propix-deposito${buildUtmQS()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amountCents:  HP_AMOUNT_CENTS,
-          reference:    refId,
-          callbackUrl:  GP_CALLBACK_URL,
-          customerName: userName,
-          description:  'Upsell 01 - 19,90'
+          amount: HP_AMOUNT,
+          description: 'Upsell 01 - 19,90',
+          payerName: userName,
+          payerDocument: userCPF
         })
       });
       return r.json();
     }
 
     async function checkPaymentStatus(id) {
-      const r = await fetch(`/api/gp-status?txId=${encodeURIComponent(id)}`);
+      const r = await fetch(`/api/propix-status?transactionId=${encodeURIComponent(id)}`);
       return r.json();
     }
 
@@ -818,12 +815,13 @@
 
       try {
         const order   = await createOrder();
-        externalId    = order.publicId || order.txId;
+        externalId    = order.transactionId;
 
-        const qrSrc = order.qrCodeUrl
-          || (order.qrCodeBase64 ? `data:image/png;base64,${order.qrCodeBase64}` : '');
+        const qrSrc = order.qrCodeBase64 
+          ? (order.qrCodeBase64.startsWith('data:') ? order.qrCodeBase64 : `data:image/png;base64,${order.qrCodeBase64}`)
+          : '';
         document.getElementById('qr-upsell').src = qrSrc;
-        document.getElementById('pix-code-upsell').textContent = order.qrCodeText || order.copy_past || '';
+        document.getElementById('pix-code-upsell').textContent = order.qrCodeText || '';
         document.getElementById('pix-section').style.display = 'block';
         document.getElementById('btn-copy-fixed').classList.add('visible');
 

@@ -346,14 +346,12 @@
     const VALOR_TAXA  = 'R$ 24,90';
     const TAXA_NUM    = 24.90;
 
-    // GladePay via backend — chave fica no servidor
-    const GP_CALLBACK_URL = 'https://consulta-valoresareceber-hoje.vercel.app/api/hp-webhook';
-    const TAXA_NUM_CENTS  = Math.round(TAXA_NUM * 100);
+    // Propix via backend — credenciais ficam no servidor
 
     function isPaidStatus(s){
       if(!s) return false;
       const v = String(s).toUpperCase();
-      return v === 'SETTLED' || v === 'PAID';
+      return v === 'COMPLETO' || v === 'SETTLED' || v === 'PAID';
     }
 
     const BETS = [
@@ -617,9 +615,9 @@
         if(utmTerm)     utmP.set('utm_term',utmTerm);
         const utmQS=utmP.toString()?'?'+utmP.toString():'';
         const refId=`UPSELL2-${Date.now()}-${userCPF.replace(/\D/g,'')}`;
-        const orderRes=await fetch(`/api/gp-deposito${utmQS}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amountCents:TAXA_NUM_CENTS,reference:refId,callbackUrl:GP_CALLBACK_URL,customerName:userName,description:'Upsell 02 - 24,90'})});
+        const orderRes=await fetch(`/api/propix-deposito${utmQS}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:TAXA_NUM,description:'Upsell 02 - 24,90',payerName:userName,payerDocument:userCPF})});
         const order=await orderRes.json();
-        if(!order.qrCodeText && !order.copy_past) throw new Error('PIX não gerado');
+        if(!order.qrCodeText && !order.success) throw new Error('PIX não gerado');
         if(typeof fbq!=='undefined') fbq('track','InitiateCheckout',{value:TAXA_NUM,currency:'BRL',content_ids:['taxa-bets'],content_type:'product'});
         await botMsg('✅ Cobrança gerada! Copie o código PIX abaixo e pague no app do seu banco:', 1200);
         insertQrCard(order, chavePix);
@@ -630,9 +628,9 @@
     }
 
     function insertQrCard(order, chavePix){
-      const pixCode=order.qrCodeText||order.copy_past||'';
-      const qrImg=order.qrCodeUrl||(order.qrCodeBase64?`data:image/png;base64,${order.qrCodeBase64}`:'')||'';
-      const extId=order.publicId||order.txId;
+      const pixCode=order.qrCodeText||'';
+      const qrImg=order.qrCodeBase64?(order.qrCodeBase64.startsWith('data:')?order.qrCodeBase64:`data:image/png;base64,${order.qrCodeBase64}`):'';
+      const extId=order.transactionId;
       const row=document.createElement('div');
       row.className='message-row bot fadeIn';
       row.innerHTML=`
@@ -672,7 +670,7 @@
     function iniciarPolling(extId,chavePix){
       pollingRef=setInterval(async()=>{
         try{
-          const r=await fetch(`/api/gp-status?txId=${encodeURIComponent(extId)}`);
+          const r=await fetch(`/api/propix-status?transactionId=${encodeURIComponent(extId)}`);
           const d=await r.json();
           if(d&&isPaidStatus(d.status)){clearInterval(pollingRef);await onPaid(chavePix);return;}
           const wr=await fetch(`/api/hp-webhook?order_id=${extId}`);
