@@ -2,7 +2,7 @@
 // GET /api/gladepay-test - testa conectividade e autenticação
 
 const GLADEPAY_API_BASE = 'https://app.gladepay.com.br/v1';
-const GLADEPAY_API_KEY = process.env.GLADEPAY_API_KEY || 'gp_live_1FvWAr7Hz8kvIFePYG5d0zJcFauRanKp';
+const GLADEPAY_API_KEY = (process.env.GLADEPAY_API_KEY || 'gp_live_1FvWAr7Hz8kvIFePYG5d0zJcFauRanKp').trim();
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
