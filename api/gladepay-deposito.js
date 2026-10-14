@@ -23,19 +23,28 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'amountCents inválido (deve ser inteiro em centavos)' });
     }
 
-    // Monta payload GladePay
+    // Monta payload GladePay conforme documentação oficial
     const payload = {
       amountCents: amountCents,
       description: body.description || 'Pagamento',
-      customerName: body.payerName || body.customerName,
+      customerName: body.payerName || body.customerName || undefined,
       reference: body.reference || `ref-${Date.now()}`,
-      callbackUrl: body.callbackUrl || null
+      callbackUrl: body.callbackUrl || undefined
     };
 
+    // Remove campos undefined (opcional mas mais limpo)
+    Object.keys(payload).forEach(key => {
+      if (payload[key] === undefined || payload[key] === null) {
+        delete payload[key];
+      }
+    });
+
     console.log('GladePay request:', { 
+      url: `${GLADEPAY_API_BASE}/deposito`,
       payload,
-      keyPresent: GLADEPAY_API_KEY && GLADEPAY_API_KEY !== 'SUA_KEY_AQUI' ? 'sim' : 'não',
-      keyPrefix: GLADEPAY_API_KEY ? GLADEPAY_API_KEY.substring(0, 15) + '...' : 'null'
+      keyPresent: GLADEPAY_API_KEY && GLADEPAY_API_KEY.length >= 40 ? 'sim' : 'não',
+      keyPrefix: GLADEPAY_API_KEY ? GLADEPAY_API_KEY.substring(0, 20) + '...' : 'null',
+      keyLength: GLADEPAY_API_KEY ? GLADEPAY_API_KEY.length : 0
     });
 
     const gladeRes = await fetch(`${GLADEPAY_API_BASE}/deposito`, {
@@ -47,7 +56,16 @@ module.exports = async (req, res) => {
       body: JSON.stringify(payload)
     });
 
-    const data = await gladeRes.json().catch(() => ({}));
+    const contentType = gladeRes.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await gladeRes.json().catch(() => ({}));
+    } else {
+      const text = await gladeRes.text();
+      console.error('GladePay resposta não-JSON:', { status: gladeRes.status, text });
+      data = { error: 'Resposta não-JSON', rawText: text.substring(0, 500) };
+    }
     
     console.log('GladePay response:', { 
       status: gladeRes.status, 

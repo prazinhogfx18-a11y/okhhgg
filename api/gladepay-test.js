@@ -49,6 +49,13 @@ module.exports = async (req, res) => {
 
   // Teste 2: Tentar criar um depósito com valor mínimo
   try {
+    const payload = {
+      amountCents: 100,
+      description: 'Teste diagnóstico',
+      customerName: 'Teste Sistema',
+      reference: `diag-${Date.now()}`
+    };
+
     const depositoRes = await fetch(`${GLADEPAY_API_BASE}/deposito`, {
       method: 'POST',
       headers: {
@@ -56,16 +63,20 @@ module.exports = async (req, res) => {
         'Authorization': `Bearer ${GLADEPAY_API_KEY}`,
         'Accept': 'application/json'
       },
-      body: JSON.stringify({
-        amountCents: 100, // R$ 1,00
-        description: 'Teste diagnóstico',
-        customerName: 'Teste Sistema',
-        reference: `diag-${Date.now()}`
-      })
+      body: JSON.stringify(payload)
     });
 
-    const depositoData = await depositoRes.json().catch(() => null);
-    const depositoText = await depositoRes.text().catch(() => '');
+    const contentType = depositoRes.headers.get('content-type');
+    let depositoData;
+    let depositoText = '';
+    
+    if (contentType && contentType.includes('application/json')) {
+      depositoData = await depositoRes.json().catch(() => null);
+      depositoText = JSON.stringify(depositoData, null, 2);
+    } else {
+      depositoText = await depositoRes.text().catch(() => '');
+      depositoData = { error: 'Resposta não-JSON', rawText: depositoText.substring(0, 300) };
+    }
     
     results.tests.push({
       name: 'POST /deposito (R$ 1,00)',
@@ -74,7 +85,8 @@ module.exports = async (req, res) => {
       statusText: depositoRes.statusText,
       headers: Object.fromEntries(depositoRes.headers.entries()),
       response: depositoData,
-      rawText: depositoText.substring(0, 500) // primeiros 500 chars
+      rawText: depositoText.substring(0, 500),
+      requestPayload: payload
     });
   } catch (err) {
     results.tests.push({
