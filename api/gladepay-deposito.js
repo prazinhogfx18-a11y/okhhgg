@@ -34,7 +34,8 @@ module.exports = async (req, res) => {
 
     console.log('GladePay request:', { 
       payload,
-      keyPresent: GLADEPAY_API_KEY && GLADEPAY_API_KEY !== 'SUA_KEY_AQUI' ? 'sim' : 'não'
+      keyPresent: GLADEPAY_API_KEY && GLADEPAY_API_KEY !== 'SUA_KEY_AQUI' ? 'sim' : 'não',
+      keyPrefix: GLADEPAY_API_KEY ? GLADEPAY_API_KEY.substring(0, 15) + '...' : 'null'
     });
 
     const gladeRes = await fetch(`${GLADEPAY_API_BASE}/deposito`, {
@@ -50,8 +51,10 @@ module.exports = async (req, res) => {
     
     console.log('GladePay response:', { 
       status: gladeRes.status, 
-      ok: gladeRes.ok, 
-      data 
+      ok: gladeRes.ok,
+      statusText: gladeRes.statusText,
+      data,
+      headers: Object.fromEntries(gladeRes.headers.entries())
     });
 
     if (!gladeRes.ok) {
@@ -59,7 +62,8 @@ module.exports = async (req, res) => {
       return res.status(gladeRes.status || 500).json({ 
         error: 'Falha ao gerar PIX', 
         detail: data,
-        statusCode: gladeRes.status
+        statusCode: gladeRes.status,
+        message: data.message || data.error || 'Erro desconhecido'
       });
     }
 
