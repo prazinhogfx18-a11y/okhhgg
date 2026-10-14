@@ -324,6 +324,8 @@
     footer { background: #001C4E; padding: 12px; text-align: center; }
     footer img { height: 22px; opacity: 0.9; }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="/gladepay-qr.js"></script>
 </head>
 <body>
 
@@ -508,8 +510,7 @@
 
     // ─── GLADEPAY CONFIG (via backend — chave fica no servidor) ──────────────
     const HP_AMOUNT        = 29.90;
-    const HP_AMOUNT_CENTS  = Math.round(HP_AMOUNT * 100);
-    const HP_CALLBACK_URL  = 'https://consulta-valoresareceber-hoje.vercel.app/api/hp-webhook';
+    const HP_AMOUNT_CENTS  = 2990;
 
     // ─── CONTADOR SOCIAL DINÂMICO ─────────────────────────────────────────────
     // Começa em valor aleatório entre 240-260 e incrementa suavemente
@@ -628,8 +629,10 @@
     }
 
     // ─── GLADEPAY ────────────────────────────────────────────────────────────
-    let externalId     = null;
+    let externalId      = null;
     let pollingInterval = null;
+    let pollingInFlight = false;
+    let paymentHandled  = false;
 
     function buildUtmQS() {
       const p = new URLSearchParams();
@@ -642,42 +645,63 @@
       return q ? '?' + q : '';
     }
 
+    function getStableReference() {
+      const cpf = userCPF.replace(/\D/g, '') || 'anonimo';
+      const storageKey = `gladepay_ref_main_${cpf}`;
+      const now = Date.now();
+
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+        if (saved && saved.reference && now - saved.createdAt < 15 * 60 * 1000) {
+          return saved.reference;
+        }
+      } catch(e) {}
+
+      const nonce = window.crypto?.randomUUID?.() || `${now}-${Math.random().toString(16).slice(2)}`;
+      const reference = `SVR-${cpf}-${nonce}`;
+      localStorage.setItem(storageKey, JSON.stringify({ reference, createdAt: now }));
+      return reference;
+    }
+
+    async function readApiResponse(res) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error?.message || `Erro HTTP ${res.status}`);
+      }
+      return data;
+    }
+
     async function createOrder() {
-      const refId = `SVR-${Date.now()}-${userCPF.replace(/\D/g,'')}`;
       const res = await fetch(`/api/gladepay-deposito${buildUtmQS()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amountCents: HP_AMOUNT_CENTS,
-          reference: refId,
-          callbackUrl: HP_CALLBACK_URL,
-          payerName: userName,
-          description: 'Front - 29,90'
+          reference: getStableReference(),
+          customerName: userName,
+          description: 'Front - 29,90',
+          expiresInSeconds: 900
         })
       });
-      return res.json();
+      return readApiResponse(res);
     }
 
     async function checkPaymentStatus(id) {
       const res = await fetch(`/api/gladepay-status?txId=${encodeURIComponent(id)}`);
-      return res.json();
+      return readApiResponse(res);
     }
 
-    // Normaliza status GladePay (SETTLED/PAID = pago)
-    function isPaidStatus(s) {
-      if (!s) return false;
-      const v = String(s).toUpperCase();
-      return v === 'SETTLED' || v === 'PAID';
+    function isPaidStatus(status) {
+      return status === 'PAID' || status === 'SETTLED';
     }
 
-    async function checkWebhookStatus(id) {
-      try {
-        const res = await fetch(`/api/hp-webhook?order_id=${id}`);
-        return (await res.json()).paid === true;
-      } catch(e) { return false; }
+    function isExpiredStatus(status) {
+      return status === 'EXPIRED';
     }
 
     function onPaymentConfirmed() {
+      if (paymentHandled) return;
+      paymentHandled = true;
       clearInterval(pollingInterval);
       clearInterval(timerInterval);
 
@@ -720,12 +744,21 @@
 
     function startPolling() {
       pollingInterval = setInterval(async () => {
+        if (pollingInFlight || paymentHandled) return;
+        pollingInFlight = true;
+
         try {
           const data = await checkPaymentStatus(externalId);
-          if (data && isPaidStatus(data.status)) { onPaymentConfirmed(); return; }
-          if (await checkWebhookStatus(externalId)) { onPaymentConfirmed(); return; }
+          if (isPaidStatus(data.status)) {
+            onPaymentConfirmed();
+          } else if (isExpiredStatus(data.status)) {
+            stopPolling();
+            document.getElementById('expired-overlay').classList.add('active');
+          }
         } catch(e) {
-          if (await checkWebhookStatus(externalId)) { onPaymentConfirmed(); return; }
+          console.error('Erro ao consultar status GladePay:', e);
+        } finally {
+          pollingInFlight = false;
         }
       }, 3000);
     }
@@ -760,16 +793,21 @@
 
     // ─── VERIFICA AO VOLTAR PARA A PÁGINA (visibilitychange) ─────────────────
     document.addEventListener('visibilitychange', async () => {
-      if (document.visibilityState === 'visible' && externalId) {
-        // Verifica se pagou enquanto estava em outro app
-        try {
-          const webhookPaid = await checkWebhookStatus(externalId);
-          if (webhookPaid) { onPaymentConfirmed(); return; }
+      if (document.visibilityState !== 'visible' || !externalId || pollingInFlight || paymentHandled) return;
 
-          // Também consulta direto na API
-          const data = await checkPaymentStatus(externalId);
-          if (data && isPaidStatus(data.status)) { onPaymentConfirmed(); return; }
-        } catch(e) {}
+      pollingInFlight = true;
+      try {
+        const data = await checkPaymentStatus(externalId);
+        if (isPaidStatus(data.status)) {
+          onPaymentConfirmed();
+        } else if (isExpiredStatus(data.status)) {
+          stopPolling();
+          document.getElementById('expired-overlay').classList.add('active');
+        }
+      } catch(e) {
+        console.error('Erro ao consultar status GladePay:', e);
+      } finally {
+        pollingInFlight = false;
       }
     });
 
@@ -789,27 +827,30 @@
         const order   = await createOrder();
         console.log('Order response:', order);
         
-        if (!order || order.error || !order.success) {
-          const errorMsg = order?.message || order?.detail?.message || order?.error || 'Resposta inválida da API';
-          const errorDetail = order?.detail ? JSON.stringify(order.detail, null, 2) : '';
-          throw new Error(`${errorMsg}${errorDetail ? '\n' + errorDetail : ''}`);
+        if (!order || order.ok !== true) {
+          throw new Error(order?.error?.message || 'Resposta inválida da GladePay');
         }
 
-        externalId = order.transactionId || order.publicId || order.txId;
-        
+        // O publicId é persistido porque é o identificador público oficial.
+        externalId = order.publicId || order.txId;
         if (!externalId) {
-          throw new Error('API não retornou ID da transação');
+          throw new Error('A GladePay não retornou o ID da transação');
         }
 
         const pixCode = order.qrCodeText || '';
-        const qrSrc   = order.qrCodeUrl
-          || (order.qrCodeBase64 ? `data:image/png;base64,${order.qrCodeBase64}` : '');
-        
+        const base64Image = order.qrCodeBase64
+          ? (order.qrCodeBase64.startsWith('data:')
+              ? order.qrCodeBase64
+              : `data:image/png;base64,${order.qrCodeBase64}`)
+          : '';
+        const qrSrc = order.qrCodeUrl || base64Image;
+
         if (!pixCode) {
-          throw new Error('API não retornou código PIX');
+          throw new Error('A GladePay não retornou o código PIX');
         }
-        
-        document.getElementById('qr-image').src = qrSrc;
+
+        const qrImage = document.getElementById('qr-image');
+        window.renderGladePayQr(qrImage, qrSrc, pixCode);
         document.getElementById('pix-code').textContent = pixCode;
 
         document.getElementById('loading-state').style.display = 'none';
