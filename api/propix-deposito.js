@@ -2,12 +2,9 @@
 // POST /api/propix-deposito
 // Body: { amount, description, payerName, payerDocument }
 //
-// Faz proxy para POST https://api.propixbr.com/api/v1/deposit
-// As credenciais ficam SOMENTE no servidor (nunca expostas ao browser).
+// Usa proxy Deno Deploy (IP fixo) para contornar whitelist da Propix
 
-const PROPIX_API_BASE = 'https://api.propixbr.com';
-const PROPIX_CLIENT_ID = process.env.PROPIX_CLIENT_ID || 'live_d4df0cae17af548869dcb5fbbb03a8bb';
-const PROPIX_CLIENT_SECRET = process.env.PROPIX_CLIENT_SECRET || 'sk_965ed1149f632f2ce3dd5fa3e24660d4ad6a41bfd04fa0e2292d8c4a44eef840';
+const DENO_PROXY_URL = 'https://sandy-lark-2659.prazinhogfx18-a11y.deno.net';
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -29,47 +26,37 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'payerName e payerDocument são obrigatórios' });
     }
 
-    // Monta payload para a Propix
+    // Monta payload
     const payload = {
       amount: amount,
       description: body.description || 'Pagamento',
       payerName: String(body.payerName),
-      payerDocument: String(body.payerDocument).replace(/\D/g, '') // Remove formatação do CPF
+      payerDocument: String(body.payerDocument).replace(/\D/g, '')
     };
 
-    console.log('Propix request:', { 
-      payload, 
-      clientId: PROPIX_CLIENT_ID ? PROPIX_CLIENT_ID.substring(0, 15) + '...' : 'ausente',
-      secretPresent: PROPIX_CLIENT_SECRET ? 'presente' : 'ausente'
-    });
+    console.log('Propix request via Deno proxy:', { payload });
 
-    const propixRes = await fetch(`${PROPIX_API_BASE}/api/v1/deposit`, {
+    const proxyRes = await fetch(`${DENO_PROXY_URL}/deposit`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-client-id': PROPIX_CLIENT_ID,
-        'x-client-secret': PROPIX_CLIENT_SECRET
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
-    const data = await propixRes.json().catch(() => ({}));
+    const data = await proxyRes.json().catch(() => ({}));
     
     console.log('Propix response:', { 
-      status: propixRes.status, 
-      ok: propixRes.ok, 
-      statusText: propixRes.statusText,
-      headers: Object.fromEntries(propixRes.headers.entries()),
+      status: proxyRes.status, 
+      ok: proxyRes.ok, 
+      statusText: proxyRes.statusText,
       data 
     });
 
-    if (!propixRes.ok) {
-      console.error('Propix deposito erro:', propixRes.status, data);
-      // Retorna erro detalhado para debug
-      return res.status(propixRes.status || 500).json({ 
+    if (!proxyRes.ok) {
+      console.error('Propix deposito erro:', proxyRes.status, data);
+      return res.status(proxyRes.status || 500).json({ 
         error: 'Falha ao gerar PIX', 
         detail: data,
-        statusCode: propixRes.status,
+        statusCode: proxyRes.status,
         message: data.message || data.error || 'Erro desconhecido da Propix'
       });
     }
@@ -83,7 +70,7 @@ module.exports = async (req, res) => {
       });
     }
 
-    // Devolve ao browser SOMENTE o necessário — nunca as credenciais
+    // Devolve ao browser
     return res.status(200).json({
       success: true,
       transactionId: data.transactionId || null,
